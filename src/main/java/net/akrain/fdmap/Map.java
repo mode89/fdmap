@@ -61,7 +61,7 @@ public class Map {
         }
     }
 
-    private static ArrayNode makeArrayNode(
+    public static ArrayNode makeArrayNode(
             final Object node,
             final int shift) {
         final Object[] children = new Object[32];
