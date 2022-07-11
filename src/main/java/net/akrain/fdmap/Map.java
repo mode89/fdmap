@@ -1,9 +1,13 @@
 package net.akrain.fdmap;
 
+import java.util.function.ToIntFunction;
 import java.util.ArrayList;
 import java.util.Optional;
 
 public class Map {
+
+    public Object root;
+    public ToIntFunction<Object> keyHasher;
 
     public static class Entry {
         public final int keyHash;
@@ -248,6 +252,58 @@ public class Map {
             }
         } else {
             throw new RuntimeException("Unexpected type of node");
+        }
+    }
+
+    public Map(Object root) {
+        this.root = root;
+        this.keyHasher = key -> key.hashCode();
+    }
+
+    public Map(Object root, final ToIntFunction<Object> keyHasher) {
+        this.root = root;
+        this.keyHasher = keyHasher;
+    }
+
+    public Map assoc(final Object key, final Object value) {
+        final Entry entry = new Entry(keyHasher.applyAsInt(key), key, value);
+        if (root == null) {
+            return new Map(entry, keyHasher);
+        } else {
+            Object newRoot = nodeAssoc(root, 0, entry);
+            if (newRoot == root) {
+                return this;
+            } else {
+                return new Map(newRoot, keyHasher);
+            }
+        }
+    }
+
+    public Object get(final Object key) {
+        if (root == null) {
+            return null;
+        } else {
+            final Entry entry = nodeGetEntry(
+                root, 0, keyHasher.applyAsInt(key), key);
+            if (entry == null) {
+                return null;
+            } else {
+                return entry.value;
+            }
+        }
+    }
+
+    public Map dissoc(final Object key) {
+        if (root == null) {
+            return this;
+        } else {
+            Object newRoot = nodeDissoc(
+                root, 0, keyHasher.applyAsInt(key), key);
+            if (newRoot == root) {
+                return this;
+            } else {
+                return new Map(newRoot);
+            }
         }
     }
 }
