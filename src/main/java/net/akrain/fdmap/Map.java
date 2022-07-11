@@ -1,6 +1,7 @@
 package net.akrain.fdmap;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 public class Map {
 
@@ -174,6 +175,77 @@ public class Map {
                 .filter(e -> e.key.equals(key))
                 .findFirst()
                 .orElse(null);
+        } else {
+            throw new RuntimeException("Unexpected type of node");
+        }
+    }
+
+    public static Object nodeDissoc(
+            final Object nodeObj,
+            final int shift,
+            final int keyHash,
+            final Object key) {
+        final Class<?> nodeClass = nodeObj.getClass();
+        if (nodeClass == ArrayNode.class) {
+            final ArrayNode node = (ArrayNode) nodeObj;
+            final int childIndex = arrayIndex(shift, keyHash);
+            final Object child = node.children[childIndex];
+            if (child == null) {
+                return node;
+            } else {
+                final Object newChild =
+                    nodeDissoc(child, shift + 5, keyHash, key);
+                if (child == newChild) {
+                    return node;
+                } else {
+                    if (newChild == null) {
+                        if (node.childrenCount > 1) {
+                            final Object[] newChildren =
+                                node.children.clone();
+                            newChildren[childIndex] = null;
+                            return new ArrayNode(
+                                newChildren, node.childrenCount - 1);
+                        } else {
+                            return null;
+                        }
+                    } else {
+                        final Object[] newChildren = node.children.clone();
+                        newChildren[childIndex] = newChild;
+                        return new ArrayNode(newChildren, node.childrenCount);
+                    }
+                }
+            }
+        } else if (nodeClass == Entry.class) {
+            final Entry node = (Entry) nodeObj;
+            if (node.key.equals(key)) {
+                return null;
+            } else {
+                return node;
+            }
+        } else if (nodeClass == CollisionNode.class) {
+            final CollisionNode node = (CollisionNode) nodeObj;
+            if (node.keyHash != keyHash) {
+                return node;
+            } else {
+                final Optional<Entry> child = node.children.stream()
+                    .filter(e -> e.key.equals(key))
+                    .findFirst();
+                if (child.isPresent()) {
+                    if (node.children.size() == 2) {
+                        return node.children.stream()
+                            .filter(e -> !e.key.equals(key))
+                            .findFirst()
+                            .get();
+                    } else {
+                        final ArrayList<Entry> newChildren =
+                            new ArrayList<>(node.children);
+                        newChildren.remove(child.get());
+                        return new CollisionNode(newChildren, keyHash);
+                    }
+                } else {
+                    return node;
+                }
+            }
         } else {
             throw new RuntimeException("Unexpected type of node");
         }
