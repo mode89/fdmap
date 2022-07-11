@@ -141,4 +141,41 @@ public class Map {
             throw new RuntimeException("Unexpected type of node");
         }
     }
+
+    public static Entry nodeGetEntry(
+            final Object nodeObj,
+            final int shift,
+            final int keyHash,
+            final Object key) {
+        final Class<?> nodeClass = nodeObj.getClass();
+        if (nodeClass == ArrayNode.class) {
+            final ArrayNode node = (ArrayNode) nodeObj;
+            final int childIndex = arrayIndex(shift, keyHash);
+            final Object child = node.children[childIndex];
+            if (child == null) {
+                return null;
+            } else {
+                return nodeGetEntry(child, shift + 5, keyHash, key);
+            }
+        } else if (nodeClass == Entry.class) {
+            final Entry node = (Entry) nodeObj;
+            if (node.keyHash == keyHash) {
+                if (node.key.equals(key)) {
+                    return node;
+                } else {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        } else if (nodeClass == CollisionNode.class) {
+            return ((CollisionNode) nodeObj).children
+                .stream()
+                .filter(e -> e.key.equals(key))
+                .findFirst()
+                .orElse(null);
+        } else {
+            throw new RuntimeException("Unexpected type of node");
+        }
+    }
 }
