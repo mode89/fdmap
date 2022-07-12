@@ -138,4 +138,51 @@ public class MapTest {
         assertTrue(nodeGetEntry(cn, 0, 1, 1) == e1);
         assertNull(nodeGetEntry(cn, 0, 3, 3));
     }
+
+    @Test
+    void nodeDissoc_Entry() {
+        final Entry e = new Entry(1, 1, 1);
+        assertTrue(nodeDissoc(e, 0, 1, 2) == e);
+        assertNull(nodeDissoc(e, 0, 1, 1));
+    }
+
+    @Test
+    void nodeDissoc_ArrayNode() {
+        final Entry e1 = new Entry(1, 1, 1);
+        final ArrayNode a1 = makeArrayNode(e1, 0);
+        assertTrue(nodeDissoc(a1, 0, 2, 2) == a1);
+        assertTrue(nodeDissoc(a1, 0, 1, 2) == a1);
+        assertNull(nodeDissoc(a1, 0, 1, 1));
+
+        final Entry e2 = new Entry(2, 2, 2);
+        final ArrayNode a2 = (ArrayNode) nodeAssoc(a1, 0, e2);
+        final ArrayNode n2 = (ArrayNode) nodeDissoc(a2, 0, 1, 1);
+        assertNull(n2.children[1]);
+        assertTrue(n2.children[2] == e2);
+        assertEquals(1, n2.childrenCount);
+
+        final Entry e3 = new Entry(33, 3, 3);
+        final ArrayNode a3 = (ArrayNode) nodeAssoc(a1, 0, e3);
+        final ArrayNode n3 = (ArrayNode) nodeDissoc(a3, 0, 1, 1);
+        assertNull(nodeGetEntry(n3, 0, 1, 1));
+        assertTrue(nodeGetEntry(n3, 0, 33, 3) == e3);
+    }
+
+    @Test
+    void nodeDissoc_CollisionNode() {
+        final Entry e1 = new Entry(1, 1, 1);
+        final Entry e2 = new Entry(1, 2, 2);
+        final CollisionNode c1 = makeCollisionNode(e1, e2);
+        assertTrue(nodeDissoc(c1, 0, 3, 3) == c1);
+        assertTrue(nodeDissoc(c1, 0, 1, 3) == c1);
+        assertTrue(nodeDissoc(c1, 0, 1, 1) == e2);
+
+        final Entry e3 = new Entry(1, 3, 3);
+        final CollisionNode c2 = (CollisionNode) nodeAssoc(c1, 0, e3);
+        final CollisionNode c3 = (CollisionNode) nodeDissoc(c2, 0, 1, 1);
+        assertEquals(2, c3.children.size());
+        assertNull(nodeGetEntry(c3, 0, 1, 1));
+        assertTrue(nodeGetEntry(c3, 0, 1, 2) == e2);
+        assertTrue(nodeGetEntry(c3, 0, 1, 3) == e3);
+    }
 }
