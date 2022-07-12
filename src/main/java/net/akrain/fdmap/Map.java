@@ -235,16 +235,16 @@ public class Map {
                     .filter(e -> e.key.equals(key))
                     .findFirst();
                 if (child.isPresent()) {
-                    if (node.children.size() == 2) {
-                        return node.children.stream()
-                            .filter(e -> !e.key.equals(key))
-                            .findFirst()
-                            .get();
-                    } else {
+                    if (node.children.size() > 2) {
                         final ArrayList<Entry> newChildren =
                             new ArrayList<>(node.children);
                         newChildren.remove(child.get());
                         return new CollisionNode(newChildren, keyHash);
+                    } else {
+                        return node.children.stream()
+                            .filter(e -> !e.key.equals(key))
+                            .findFirst()
+                            .get();
                     }
                 } else {
                     return node;
