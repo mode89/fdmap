@@ -256,8 +256,7 @@ public class Map {
     }
 
     public Map(Object root) {
-        this.root = root;
-        this.keyHasher = key -> key.hashCode();
+        this(root, key -> key.hashCode());
     }
 
     public Map(Object root, final ToIntFunction<Object> keyHasher) {
