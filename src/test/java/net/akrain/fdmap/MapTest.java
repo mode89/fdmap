@@ -113,4 +113,29 @@ public class MapTest {
         assertFalse(n.children.contains(e2));
         assertTrue(n.children.contains(e3));
     }
+
+    @Test
+    void nodeGetEntry_Entry() {
+        final Entry e = new Entry(1, 1, 1);
+        assertTrue(nodeGetEntry(e, 0, 1, 1) == e);
+        assertNull(nodeGetEntry(e, 0, 1, 2));
+        assertNull(nodeGetEntry(e, 0, 2, 2));
+    }
+
+    @Test
+    void nodeGetEntry_ArrayNode() {
+        final Entry e = new Entry(1, 1, 1);
+        final ArrayNode a = makeArrayNode(e, 0);
+        assertTrue(nodeGetEntry(a, 0, 1, 1) == e);
+        assertNull(nodeGetEntry(a, 0, 2, 2));
+    }
+
+    @Test
+    void nodeGetEntry_CollisionNode() {
+        final Entry e1 = new Entry(1, 1, 1);
+        final Entry e2 = new Entry(1, 2, 2);
+        final CollisionNode cn = makeCollisionNode(e1, e2);
+        assertTrue(nodeGetEntry(cn, 0, 1, 1) == e1);
+        assertNull(nodeGetEntry(cn, 0, 3, 3));
+    }
 }
