@@ -17,22 +17,41 @@ public class PropertiesTest {
     boolean sameAsBuiltinMap(@ForAll("genOpsAndKeys") Tuple opsAndKeys) {
         final List<Tuple> ops = (List<Tuple>) opsAndKeys.items().get(0);
         final Set<Object> keys = (Set<Object>) opsAndKeys.items().get(1);
-        final HashMap<Object,Object> bmap = makeBuiltinMap(ops);
-        final Map fdmap = makeFDMap(ops);
-        final Set<Object> usedKeys = bmap.keySet();
-        final Set<Object> unusedKeys = new HashSet<>(keys);
-        unusedKeys.removeAll(usedKeys);
-        assertArrayEquals(
-            usedKeys.stream().map(k -> bmap.get(k)).toArray(),
-            usedKeys.stream().map(k -> fdmap.get(k)).toArray());
-        assertTrue(unusedKeys.stream()
-            .map(k -> fdmap.get(k))
-            .allMatch(x -> x == null));
+        final HashMap<Object,Object> hmap = applyOps(ops, new HashMap<>());
+        final Map fdmap = applyOps(ops, new Map(null));
+        assertSimilar(fdmap, hmap, keys);
         return true;
     }
 
-    private static HashMap<Object,Object> makeBuiltinMap(List<Tuple> ops) {
-        HashMap<Object,Object> map = new HashMap<>();
+    @Property
+    boolean difference(@ForAll("genDifferenceSamples") Tuple sample) {
+
+        final Set<Object> keys = (Set<Object>) sample.items().get(0);
+        final List<Tuple> buildOps = (List<Tuple>) sample.items().get(1);
+        final List<Tuple> ops = (List<Tuple>) sample.items().get(2);
+
+        final HashMap<Object,Object> hmap1 =
+            applyOps(buildOps, new HashMap<>());
+        final HashMap<Object,Object> hmap2 = applyOps(ops, hmap1);
+
+        final Map fdmap1 = applyOps(buildOps, new Map(null));
+        final Map fdmap2 = applyOps(ops, fdmap1);
+
+        assertSimilar(
+            fdmap1.difference(fdmap2),
+            hashMapDifference(hmap1, hmap2),
+            keys);
+        assertSimilar(
+            fdmap2.difference(fdmap1),
+            hashMapDifference(hmap2, hmap1),
+            keys);
+
+        return true;
+    }
+
+    private static HashMap<Object,Object> applyOps(
+            List<Tuple> ops, HashMap<Object,Object> map) {
+        map = new HashMap<>(map);
         for (Tuple op: ops) {
             final String name = (String) op.items().get(0);
             final Object key = op.items().get(1);
@@ -46,8 +65,7 @@ public class PropertiesTest {
         return map;
     }
 
-    private static Map makeFDMap(List<Tuple> ops) {
-        Map map = new Map(null);
+    private static Map applyOps(List<Tuple> ops, Map map) {
         for (Tuple op: ops) {
             final String name = (String) op.items().get(0);
             final Object key = op.items().get(1);
@@ -59,6 +77,52 @@ public class PropertiesTest {
             }
         }
         return map;
+    }
+
+    private static void assertSimilar(
+            final Map fdmap,
+            final HashMap<Object,Object> hmap,
+            final Set<Object> knownKeys) {
+        final Set<Object> usedKeys = hmap.keySet();
+        final Set<Object> unusedKeys = new HashSet<>(knownKeys);
+        unusedKeys.removeAll(usedKeys);
+        assertArrayEquals(
+            usedKeys.stream().map(k -> hmap.get(k)).toArray(),
+            usedKeys.stream().map(k -> fdmap.get(k)).toArray());
+        assertTrue(unusedKeys.stream()
+            .map(k -> fdmap.get(k))
+            .allMatch(x -> x == null));
+    }
+
+    private static HashMap<Object,Object> hashMapDifference(
+            HashMap<Object,Object> leftMap,
+            HashMap<Object,Object> rightMap) {
+        final HashMap<Object,Object> result = new HashMap<>();
+        for (java.util.Map.Entry<Object,Object> entry: leftMap.entrySet()) {
+            final Object key = entry.getKey();
+            final Object value = entry.getValue();
+            if (rightMap.get(key) != value) {
+                result.put(key, value);
+            }
+        }
+        return result;
+    }
+
+    @Provide
+    Arbitrary<Tuple> genDifferenceSamples() {
+        return genKeys()
+            .flatMap(keys ->
+                Combinators.combine(genBuildOps(keys), genOps(keys)).as(
+                    (buildOps, ops) -> Tuple.of(keys, buildOps, ops)));
+    }
+
+    @Provide
+    Arbitrary<List<Tuple>> genBuildOps(Set<Object> allKeys) {
+        Arbitrary<Object> obj = genObject();
+        return Arbitraries.subsetOf(allKeys)
+            .map(keys -> keys.stream()
+                .map(k -> Tuple.of("assoc", k, obj.sample()))
+                .collect(Collectors.toList()));
     }
 
     @Provide
