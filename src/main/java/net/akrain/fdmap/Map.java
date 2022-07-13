@@ -255,6 +255,158 @@ public class Map {
         }
     }
 
+    private static Object nodeDifferenceWithEntry(
+            final int shift,
+            final Object leftNode,
+            final Object rightNode) {
+        final Entry rightEntry = (Entry) rightNode;
+        final Entry leftEntry = nodeGetEntry(
+            leftNode, shift, rightEntry.keyHash, rightEntry.key);
+        if (leftEntry == null) {
+            return leftNode;
+        } else if (leftEntry == rightEntry
+                   || leftEntry.value.equals(rightEntry.value)) {
+            return nodeDissoc(
+                leftNode,
+                shift,
+                rightEntry.keyHash,
+                rightEntry.key);
+        } else {
+            return leftNode;
+        }
+    }
+
+    public static Object nodeDifference(
+            final int shift,
+            final Object leftNodeObj,
+            final Object rightNodeObj) {
+        if (leftNodeObj == rightNodeObj) {
+            return null;
+        } else if (leftNodeObj != null && rightNodeObj != null) {
+            final Class<?> leftNodeClass = leftNodeObj.getClass();
+            final Class<?> rightNodeClass = rightNodeObj.getClass();
+            if (leftNodeClass == ArrayNode.class) {
+                final ArrayNode leftNode = (ArrayNode) leftNodeObj;
+                if (rightNodeClass == ArrayNode.class) {
+                    final ArrayNode rightNode = (ArrayNode) rightNodeObj;
+                    final Object[] children = new Object[32];
+                    int childrenCount = 0;
+                    boolean returnLeftNode = true;
+                    for (int i = 0; i < 32; ++ i) {
+                        final Object leftChild = leftNode.children[i];
+                        final Object rightChild = rightNode.children[i];
+                        final Object child = nodeDifference(
+                            shift + 5, leftChild, rightChild);
+                        children[i] = child;
+                        if (child != null) {
+                            childrenCount += 1;
+                        }
+                        if (child != leftChild) {
+                            returnLeftNode = false;
+                        }
+                    }
+                    if (childrenCount == 0) {
+                        return null;
+                    } else if (returnLeftNode) {
+                        return leftNode;
+                    } else {
+                        return new ArrayNode(children, childrenCount);
+                    }
+                } else if (rightNodeClass == Entry.class) {
+                    return nodeDifferenceWithEntry(
+                        shift, leftNode, rightNodeObj);
+                } else if (rightNodeClass == CollisionNode.class) {
+                    final CollisionNode rightNode =
+                        (CollisionNode) rightNodeObj;
+                    Object result = leftNode;
+                    for (Entry rightEntry: rightNode.children) {
+                        final Entry leftEntry = nodeGetEntry(
+                            result, shift, rightEntry.keyHash, rightEntry.key);
+                        if (leftEntry != null
+                            && (leftEntry == rightEntry
+                                || leftEntry.value.equals(rightEntry.value))) {
+                            result = nodeDissoc(
+                                result,
+                                shift,
+                                rightEntry.keyHash,
+                                rightEntry.key);
+                        }
+                        if (result == null) {
+                            break;
+                        }
+                    }
+                    return result;
+                } else {
+                    throw new RuntimeException(
+                        "Unexpected type of right node");
+                }
+            } else if (leftNodeClass == Entry.class) {
+                final Entry leftNode = (Entry) leftNodeObj;
+                if (rightNodeClass == ArrayNode.class
+                    || rightNodeClass == CollisionNode.class) {
+                    final Entry rightEntry = nodeGetEntry(
+                        rightNodeObj, shift, leftNode.keyHash, leftNode.key);
+                    if (rightEntry == null) {
+                        return leftNode;
+                    } else if (leftNode == rightEntry
+                               || leftNode.value.equals(rightEntry.value)) {
+                        return null;
+                    } else {
+                        return leftNode;
+                    }
+                } else if (rightNodeClass == Entry.class) {
+                    final Entry rightNode = (Entry) rightNodeObj;
+                    if (leftNode.key.equals(rightNode.key)
+                        && leftNode.value.equals(rightNode.value)) {
+                        return null;
+                    } else {
+                        return leftNode;
+                    }
+                } else {
+                    throw new RuntimeException(
+                        "Unexpected type of right node");
+                }
+            } else if (leftNodeClass == CollisionNode.class) {
+                final CollisionNode leftNode = (CollisionNode) leftNodeObj;
+                if (rightNodeClass == ArrayNode.class
+                    || rightNodeClass == CollisionNode.class) {
+                    final ArrayList<Entry> children = new ArrayList<>();
+                    for (Entry leftEntry: leftNode.children) {
+                        final Entry rightEntry = nodeGetEntry(
+                            rightNodeObj,
+                            shift,
+                            leftEntry.keyHash,
+                            leftEntry.key);
+                        if (rightEntry == null
+                            || !rightEntry.value.equals(leftEntry.value)) {
+                            children.add(leftEntry);
+                        }
+                    }
+                    final int childrenNum = children.size();
+                    if (childrenNum == 0) {
+                        return null;
+                    } else if (childrenNum == 1) {
+                        return children.get(0);
+                    } else if (childrenNum == leftNode.children.size()) {
+                        return leftNode;
+                    } else {
+                        return new CollisionNode(children, leftNode.keyHash);
+                    }
+                } else if (rightNodeClass == Entry.class) {
+                    return nodeDifferenceWithEntry(
+                        shift, leftNode, rightNodeObj);
+                } else {
+                    throw new RuntimeException(
+                        "Unexpected type of right node");
+                }
+            } else {
+                throw new RuntimeException("Unexpected type of left node");
+            }
+        } else {
+            return leftNodeObj;
+        }
+    }
+
     public Map(Object root) {
         this(root, key -> key.hashCode());
     }
@@ -303,6 +455,15 @@ public class Map {
             } else {
                 return new Map(newRoot);
             }
+        }
+    }
+
+    public Map difference(final Map other) {
+        Object rootDiff = nodeDifference(0, this.root, other.root);
+        if (rootDiff == this.root) {
+            return this;
+        } else {
+            return new Map(rootDiff);
         }
     }
 }
