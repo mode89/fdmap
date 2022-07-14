@@ -101,7 +101,9 @@ public class PropertiesTest {
         for (java.util.Map.Entry<Object,Object> entry: leftMap.entrySet()) {
             final Object key = entry.getKey();
             final Object value = entry.getValue();
-            if (rightMap.get(key) != value) {
+            final Object rightValue = rightMap.get(key);
+            if (rightValue == null
+                || !rightMap.get(key).equals(value)) {
                 result.put(key, value);
             }
         }
