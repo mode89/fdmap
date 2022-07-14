@@ -6,8 +6,8 @@ import java.util.Optional;
 
 public class Map {
 
-    public Object root;
-    public ToIntFunction<Object> keyHasher;
+    public final Object root;
+    public final ToIntFunction<Object> keyHasher;
 
     public Map(Object root) {
         this(root, key -> key.hashCode());
