@@ -181,6 +181,7 @@ public class PropertiesTest {
     @Provide
     Arbitrary<Object> genObject() {
         return Arbitraries.oneOf(
+            Arbitraries.just(null),
             Arbitraries.integers(),
             Arbitraries.strings(),
             Arbitraries.doubles());

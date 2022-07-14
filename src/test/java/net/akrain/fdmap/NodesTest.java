@@ -10,7 +10,7 @@ public class NodesTest {
 
     CollisionNode makeCollisionNode(final Entry e1, final Entry e2) {
         assertTrue(e1.keyHash == e2.keyHash);
-        assertFalse(e1.key.equals(e2.key));
+        assertFalse(Nodes.equal(e1.key, e2.key));
         final ArrayList<Entry> children = new ArrayList<>();
         children.add(e1);
         children.add(e2);
@@ -49,6 +49,12 @@ public class NodesTest {
         assertTrue(n.children[1] == e1);
         assertTrue(n.children[2] == e2);
         assertEquals(2, n.childrenCount);
+    }
+
+    @Test
+    void assocEntryNullKey() {
+        final Entry e = new Entry(42, null, 1);
+        assertTrue(assoc(e, 0, new Entry(42, null, 1)) == e);
     }
 
     @Test
@@ -116,11 +122,20 @@ public class NodesTest {
     }
 
     @Test
+    void assocCollisionNodeNullKeyValue() {
+        final CollisionNode cn = makeCollisionNode(
+            new Entry(42, null, null),
+            new Entry(42, 1, 1));
+        assertTrue(assoc(cn, 0, new Entry(42, null, null)) == cn);
+    }
+
+    @Test
     void getEntry_Entry() {
         final Entry e = new Entry(1, 1, 1);
         assertTrue(getEntry(e, 0, 1, 1) == e);
         assertNull(getEntry(e, 0, 1, 2));
         assertNull(getEntry(e, 0, 2, 2));
+        assertNull(getEntry(new Entry(42, null, 1), 0, 42, 1));
     }
 
     @Test
@@ -141,10 +156,20 @@ public class NodesTest {
     }
 
     @Test
+    void getEntry_CollisionNode_NullKey() {
+        final Entry e = new Entry(42, null, null);
+        final CollisionNode cn = makeCollisionNode(new Entry(42, 1, 1), e);
+        assertTrue(getEntry(cn, 0, 42, null) == e);
+    }
+
+    @Test
     void dissoc_Entry() {
         final Entry e = new Entry(1, 1, 1);
         assertTrue(dissoc(e, 0, 1, 2) == e);
         assertNull(dissoc(e, 0, 1, 1));
+
+        final Entry e2 = new Entry(42, null, null);
+        assertTrue(dissoc(e2, 0, 42, 1) == e2);
     }
 
     @Test
@@ -185,6 +210,11 @@ public class NodesTest {
         assertNull(getEntry(c3, 0, 1, 1));
         assertTrue(getEntry(c3, 0, 1, 2) == e2);
         assertTrue(getEntry(c3, 0, 1, 3) == e3);
+
+        final Entry eNull = new Entry(42, null, null);
+        final CollisionNode cNull = makeCollisionNode(
+            eNull, new Entry(42, 1, 1));
+        assertTrue(dissoc(cNull, 0, 42, 1) == eNull);
     }
 
     @Test
@@ -217,6 +247,9 @@ public class NodesTest {
         assertNull(difference(
             0, e1, makeCollisionNode(
                 new Entry(1, 1, 1), new Entry(1, 2, 2))));
+
+        assertNull(difference(
+            0, new Entry(42, null, null), new Entry(42, null, null)));
     }
 
     @Test
