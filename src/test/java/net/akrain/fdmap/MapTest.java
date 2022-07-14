@@ -30,4 +30,10 @@ public class MapTest {
         assertNull(m9.get(1));
         assertEquals("2", m9.get(2));
     }
+
+    @Test
+    void getNotFound() {
+        final Map m = new Map(null);
+        assertEquals(42, m.get(1, 42));
+    }
 }

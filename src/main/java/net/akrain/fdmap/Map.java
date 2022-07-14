@@ -34,13 +34,17 @@ public class Map {
     }
 
     public Object get(final Object key) {
+        return get(key, null);
+    }
+
+    public Object get(final Object key, final Object notFound) {
         if (root == null) {
-            return null;
+            return notFound;
         } else {
             final Nodes.Entry entry = Nodes.getEntry(
                 root, 0, keyHasher.applyAsInt(key), key);
             if (entry == null) {
-                return null;
+                return notFound;
             } else {
                 return entry.value;
             }
