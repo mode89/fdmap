@@ -23,7 +23,7 @@ public class PropertiesTest {
         return true;
     }
 
-    @Property
+    @Property(tries = 10000)
     boolean difference(@ForAll("genDifferenceSamples") Tuple sample) {
 
         final Set<Object> keys = (Set<Object>) sample.items().get(0);
