@@ -3,6 +3,7 @@ package net.akrain.fdmap;
 import static net.akrain.fdmap.Map.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.function.ToIntFunction;
 import org.junit.jupiter.api.Test;
 
 public class MapTest {
@@ -48,5 +49,20 @@ public class MapTest {
         assertTrue(s2.root == m2.root);
         assertEquals(2, s2.first().value);
         assertNull(s2.next());
+    }
+
+    @Test
+    void keepKeyHasher() {
+        final ToIntFunction<Object> hasher = (x) -> (Integer) x;
+        final Map m1 = new Map(null, hasher);
+        final Map m2 = m1.assoc(1, 2);
+        final Map m3 = m2.assoc(3, 4);
+        final Map m4 = m3.dissoc(1);
+        assertTrue(m2.keyHasher == hasher);
+        assertTrue(m3.keyHasher == hasher);
+        assertTrue(m4.keyHasher == hasher);
+        assertTrue(m3.difference(m2).keyHasher == hasher);
+        assertThrows(UnsupportedOperationException.class,
+            () -> m1.difference(new Map(null)));
     }
 }

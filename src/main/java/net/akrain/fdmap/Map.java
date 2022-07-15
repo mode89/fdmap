@@ -60,7 +60,7 @@ public class Map {
             if (newRoot == root) {
                 return this;
             } else {
-                return new Map(newRoot);
+                return new Map(newRoot, keyHasher);
             }
         }
     }
@@ -74,11 +74,16 @@ public class Map {
     }
 
     public Map difference(final Map other) {
+        if (this.keyHasher != other.keyHasher) {
+            throw new UnsupportedOperationException(
+                "Can't calculated difference of maps that were built " +
+                "with different key-hashers");
+        }
         Object rootDiff = Nodes.difference(0, this.root, other.root);
         if (rootDiff == this.root) {
             return this;
         } else {
-            return new Map(rootDiff);
+            return new Map(rootDiff, keyHasher);
         }
     }
 }
