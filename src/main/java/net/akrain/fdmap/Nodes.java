@@ -1,11 +1,12 @@
 package net.akrain.fdmap;
 
+import clojure.lang.IMapEntry;
 import java.util.ArrayList;
 import java.util.Optional;
 
 public class Nodes {
 
-    public static class Entry {
+    public static class Entry implements IMapEntry {
         public final int keyHash;
         public final Object key;
         public final Object value;
@@ -17,6 +18,30 @@ public class Nodes {
             this.keyHash = keyHash;
             this.key = key;
             this.value = value;
+        }
+
+        // Implementation of IMapEntry
+
+        public Object key() {
+            return key;
+        }
+
+        public Object val() {
+            return value;
+        }
+
+        // Implementation of Map.Entry
+
+        public Object getKey() {
+            return key;
+        }
+
+        public Object getValue() {
+            return value;
+        }
+
+        public Object setValue(Object newValue) {
+            throw new UnsupportedOperationException();
         }
     }
 
