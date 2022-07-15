@@ -10,7 +10,7 @@ public class MapTest {
 
     @Test
     void map() {
-        final Map m1 = new Map(null);
+        final Map m1 = new Map();
         final Map m2 = m1.assoc(1, "1");
         final Map m3 = m2.assoc(1, "1");
         final Map m4 = m2.assoc(1, "2");
@@ -34,13 +34,15 @@ public class MapTest {
 
     @Test
     void getNotFound() {
-        final Map m = new Map(null);
-        assertEquals(42, m.get(1, 42));
+        final Map m1 = new Map();
+        final Map m2 = m1.assoc(1, 1);
+        assertEquals(42, m1.get(1, 42));
+        assertEquals(42, m2.get(2, 42));
     }
 
     @Test
     void mapSeq() {
-        final Map m1 = new Map(null);
+        final Map m1 = new Map();
         final Seq s1 = m1.seq();
         assertNull(s1);
 
@@ -54,7 +56,7 @@ public class MapTest {
     @Test
     void keepKeyHasher() {
         final ToIntFunction<Object> hasher = (x) -> (Integer) x;
-        final Map m1 = new Map(null, hasher);
+        final Map m1 = new Map(hasher);
         final Map m2 = m1.assoc(1, 2);
         final Map m3 = m2.assoc(3, 4);
         final Map m4 = m3.dissoc(1);
@@ -63,6 +65,6 @@ public class MapTest {
         assertTrue(m4.keyHasher == hasher);
         assertTrue(m3.difference(m2).keyHasher == hasher);
         assertThrows(UnsupportedOperationException.class,
-            () -> m1.difference(new Map(null)));
+            () -> m1.difference(new Map()));
     }
 }

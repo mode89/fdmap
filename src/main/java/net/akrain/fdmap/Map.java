@@ -9,11 +9,15 @@ public class Map {
     public final Object root;
     public final ToIntFunction<Object> keyHasher;
 
-    public Map(final Object root) {
-        this(root, key -> key.hashCode());
+    public Map() {
+        this(null, key -> key.hashCode());
     }
 
-    public Map(final Object root, final ToIntFunction<Object> keyHasher) {
+    public Map(final ToIntFunction<Object> keyHasher) {
+        this(null, keyHasher);
+    }
+
+    private Map(final Object root, final ToIntFunction<Object> keyHasher) {
         this.root = root;
         this.keyHasher = keyHasher;
     }
