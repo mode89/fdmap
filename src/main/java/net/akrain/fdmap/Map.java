@@ -2,6 +2,7 @@ package net.akrain.fdmap;
 
 import clojure.lang.IMapEntry;
 import clojure.lang.IPersistentMap;
+import clojure.lang.IPersistentVector;
 import java.util.function.ToIntFunction;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -152,6 +153,17 @@ public class Map implements IPersistentMap {
     }
 
     public Map cons(Object obj) {
+        if (obj instanceof java.util.Map.Entry) {
+            final java.util.Map.Entry<Object,Object> e =
+                (java.util.Map.Entry) obj;
+            return assoc(e.getKey(), e.getValue());
+		} else if (obj instanceof IPersistentVector) {
+            final IPersistentVector v = (IPersistentVector) obj;
+            if (v.count() != 2)
+                throw new IllegalArgumentException(
+                    "Vector arg to map conj must be a pair");
+            return assoc(v.nth(0), v.nth(1));
+        }
         throw new UnsupportedOperationException();
     }
 
