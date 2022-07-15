@@ -4,6 +4,7 @@ import clojure.lang.IMapEntry;
 import clojure.lang.IPersistentMap;
 import java.util.function.ToIntFunction;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Optional;
 
@@ -12,12 +13,24 @@ public class Map implements IPersistentMap {
     public final Object root;
     public final ToIntFunction<Object> keyHasher;
 
-    public Map() {
-        this(null, key -> key.hashCode());
+    private static final ToIntFunction<Object>
+        DEFAULT_KEY_HASHER = key -> key.hashCode();
+    private static final HashMap<ToIntFunction<Object>,Map>
+        BLANK_MAPS = new HashMap<>();
+
+    public static Map blank() {
+        return blank(DEFAULT_KEY_HASHER);
     }
 
-    public Map(final ToIntFunction<Object> keyHasher) {
-        this(null, keyHasher);
+    public static Map blank(final ToIntFunction<Object> hasher) {
+        final Map cachedMap = BLANK_MAPS.get(hasher);
+        if (cachedMap != null) {
+            return cachedMap;
+        } else {
+            final Map newMap = new Map(null, hasher);
+            BLANK_MAPS.put(hasher, newMap);
+            return newMap;
+        }
     }
 
     private Map(final Object root, final ToIntFunction<Object> hasher) {
@@ -71,7 +84,11 @@ public class Map implements IPersistentMap {
             if (newRoot == root) {
                 return this;
             } else {
-                return new Map(newRoot, keyHasher);
+                if (newRoot == null) {
+                    return blank(keyHasher);
+                } else {
+                    return new Map(newRoot, keyHasher);
+                }
             }
         }
     }
@@ -94,7 +111,11 @@ public class Map implements IPersistentMap {
         if (rootDiff == this.root) {
             return this;
         } else {
-            return new Map(rootDiff, keyHasher);
+            if (rootDiff == null) {
+                return blank(keyHasher);
+            } else {
+                return new Map(rootDiff, keyHasher);
+            }
         }
     }
 

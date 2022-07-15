@@ -18,7 +18,7 @@ public class PropertiesTest {
         final List<Tuple> ops = (List<Tuple>) opsAndKeys.items().get(0);
         final Set<Object> keys = (Set<Object>) opsAndKeys.items().get(1);
         final HashMap<Object,Object> hmap = applyOps(ops, new HashMap<>());
-        final Map fdmap = applyOps(ops, new Map());
+        final Map fdmap = applyOps(ops, blank());
         assertSimilar(fdmap, hmap, keys);
         return true;
     }
@@ -28,7 +28,7 @@ public class PropertiesTest {
         final List<Tuple> ops = (List<Tuple>) opsAndKeys.items().get(0);
         final Set<Object> keys = (Set<Object>) opsAndKeys.items().get(1);
         final HashMap<Object,Object> hmap = applyOps(ops, new HashMap<>());
-        final Map fdmap = applyOps(ops, new Map());
+        final Map fdmap = applyOps(ops, blank());
 
         final Set<java.util.Map.Entry<Object,Object>> hmapEntries =
             hmap.entrySet();
@@ -61,7 +61,7 @@ public class PropertiesTest {
             applyOps(buildOps, new HashMap<>());
         final HashMap<Object,Object> hmap2 = applyOps(ops, hmap1);
 
-        final Map fdmap1 = applyOps(buildOps, new Map());
+        final Map fdmap1 = applyOps(buildOps, blank());
         final Map fdmap2 = applyOps(ops, fdmap1);
 
         assertSimilar(
