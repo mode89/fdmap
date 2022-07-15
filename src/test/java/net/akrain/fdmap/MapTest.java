@@ -67,4 +67,9 @@ public class MapTest {
         assertThrows(UnsupportedOperationException.class,
             () -> m1.difference(new Map()));
     }
+
+    @Test
+    void nullHasher() {
+        assertThrows(IllegalArgumentException.class, () -> new Map(null));
+    }
 }

@@ -17,9 +17,13 @@ public class Map {
         this(null, keyHasher);
     }
 
-    private Map(final Object root, final ToIntFunction<Object> keyHasher) {
+    private Map(final Object root, final ToIntFunction<Object> hasher) {
+        if (hasher == null) {
+            throw new IllegalArgumentException(
+                "Key-hasher isn't allowed to be null");
+        }
         this.root = root;
-        this.keyHasher = keyHasher;
+        this.keyHasher = hasher;
     }
 
     public Map assoc(final Object key, final Object value) {
