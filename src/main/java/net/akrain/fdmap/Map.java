@@ -1,10 +1,13 @@
 package net.akrain.fdmap;
 
+import clojure.lang.IMapEntry;
+import clojure.lang.IPersistentMap;
 import java.util.function.ToIntFunction;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Optional;
 
-public class Map {
+public class Map implements IPersistentMap {
 
     public final Object root;
     public final ToIntFunction<Object> keyHasher;
@@ -93,5 +96,59 @@ public class Map {
         } else {
             return new Map(rootDiff, keyHasher);
         }
+    }
+
+    // Implementation of IPersistentMap
+
+    public Map assocEx(Object key, Object val) {
+        throw new UnsupportedOperationException();
+    }
+
+    public Map without(Object key) {
+        throw new UnsupportedOperationException();
+    }
+
+    // Implementation of Iterable
+
+    public Iterator<Object> iterator() {
+        throw new UnsupportedOperationException();
+    }
+
+    // Implementation of Associative
+
+    public boolean containsKey(Object key) {
+        throw new UnsupportedOperationException();
+    }
+
+    public IMapEntry entryAt(Object key) {
+        throw new UnsupportedOperationException();
+    }
+
+    // Implementation of IPersistentCollection
+
+    public int count() {
+        throw new UnsupportedOperationException();
+    }
+
+    public Map cons(Object obj) {
+        throw new UnsupportedOperationException();
+    }
+
+    public Map empty() {
+        throw new UnsupportedOperationException();
+    }
+
+    public boolean equiv(Object obj) {
+        throw new UnsupportedOperationException();
+    }
+
+    // Implementation of ILookup
+
+    public Object valAt(Object key) {
+        throw new UnsupportedOperationException();
+    }
+
+    public Object valAt(Object key, Object notFound) {
+        throw new UnsupportedOperationException();
     }
 }
