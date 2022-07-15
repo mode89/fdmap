@@ -1,13 +1,10 @@
 package net.akrain.fdmap;
 
-import clojure.lang.IMapEntry;
 import clojure.lang.IPersistentMap;
 import clojure.lang.IPersistentVector;
 import java.util.function.ToIntFunction;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Optional;
 
 public class Map implements IPersistentMap {
 
@@ -142,7 +139,7 @@ public class Map implements IPersistentMap {
         throw new UnsupportedOperationException();
     }
 
-    public IMapEntry entryAt(Object key) {
+    public Nodes.Entry entryAt(Object key) {
         throw new UnsupportedOperationException();
     }
 
