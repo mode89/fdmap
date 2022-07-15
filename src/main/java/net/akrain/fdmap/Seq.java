@@ -39,7 +39,7 @@ public class Seq implements ISeq {
     // Implementation of Sequable
 
     public Seq seq() {
-        throw new UnsupportedOperationException();
+        return this;
     }
 
     // Implementation of IPersistentCollection
