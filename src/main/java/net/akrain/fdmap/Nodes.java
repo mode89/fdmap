@@ -20,6 +20,10 @@ public class Nodes {
             this.value = value;
         }
 
+        public String toString() {
+            return String.format("<%s %s>", key, value);
+        }
+
         // Implementation of IMapEntry
 
         public Object key() {
