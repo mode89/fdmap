@@ -23,6 +23,33 @@ public class PropertiesTest {
         return true;
     }
 
+    @Property
+    boolean mapSeq(@ForAll("genOpsAndKeys") Tuple opsAndKeys) {
+        final List<Tuple> ops = (List<Tuple>) opsAndKeys.items().get(0);
+        final Set<Object> keys = (Set<Object>) opsAndKeys.items().get(1);
+        final HashMap<Object,Object> hmap = applyOps(ops, new HashMap<>());
+        final Map fdmap = applyOps(ops, new Map(null));
+
+        final Set<java.util.Map.Entry<Object,Object>> hmapEntries =
+            hmap.entrySet();
+        final ArrayList<Nodes.Entry> fdmapEntries = new ArrayList<>();
+        for (Seq s = fdmap.seq(); s != null; s = s.next()) {
+            fdmapEntries.add(s.first());
+        }
+
+        final boolean equalEntryCounts =
+            hmapEntries.size() == fdmapEntries.size();
+
+        final boolean equalEntrySets = hmapEntries.stream()
+            .filter(he -> fdmapEntries.stream()
+                .filter(fde -> Nodes.equal(he.getKey(), fde.key)
+                    && Nodes.equal(he.getValue(), fde.value))
+                .count() == 1)
+            .count() == hmapEntries.size();
+
+        return equalEntryCounts && equalEntrySets;
+    }
+
     @Property(tries = 10000)
     boolean difference(@ForAll("genDifferenceSamples") Tuple sample) {
 

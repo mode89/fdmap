@@ -259,6 +259,66 @@ public class Nodes {
         }
     }
 
+    public static Seq seq(final Object nodeObj, final Object root) {
+        final Class<?> nodeClass = nodeObj.getClass();
+        if (nodeClass == ArrayNode.class) {
+            final ArrayNode node = (ArrayNode) nodeObj;
+            for (Object child: node.children) {
+                if (child != null) {
+                    return seq(child, root);
+                }
+            }
+            return null;
+        } else if (nodeClass == Entry.class) {
+            return new Seq(root, (Entry) nodeObj, 0);
+        } else if (nodeClass == CollisionNode.class) {
+            final CollisionNode node = (CollisionNode) nodeObj;
+            return new Seq(root, node.children.get(0), 0);
+        } else {
+            throw new RuntimeException("Unexpected type of node");
+        }
+    }
+
+    public static Seq next(
+            final Object nodeObj,
+            final Object root,
+            final int shift,
+            final int keyHash,
+            final int entryIndex) {
+        final Class<?> nodeClass = nodeObj.getClass();
+        if (nodeClass == ArrayNode.class) {
+            final ArrayNode node = (ArrayNode) nodeObj;
+            final Object[] children = node.children;
+            final int childIndex = arrayIndex(shift, keyHash);
+            final Seq s = next(
+                children[childIndex], root, shift + 5, keyHash, entryIndex);
+            if (s != null) {
+                return s;
+            } else {
+                for (int i = childIndex + 1; i < 32; ++ i) {
+                    Object child = children[i];
+                    if (child != null) {
+                        return seq(child, root);
+                    }
+                }
+                return null;
+            }
+        } else if (nodeClass == Entry.class) {
+            return null;
+        } else if (nodeClass == CollisionNode.class) {
+            final CollisionNode node = (CollisionNode) nodeObj;
+            final int nextIndex = entryIndex + 1;
+            if (nextIndex >= node.children.size()) {
+                return null;
+            } else {
+                return new Seq(
+                    root, node.children.get(nextIndex), nextIndex);
+            }
+        } else {
+            throw new RuntimeException("Unexpected type of node");
+        }
+    }
+
     private static Object differenceWithEntry(
             final int shift,
             final Object leftNode,

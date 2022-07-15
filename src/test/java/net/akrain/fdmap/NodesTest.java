@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 public class NodesTest {
 
-    CollisionNode makeCollisionNode(final Entry e1, final Entry e2) {
+    static CollisionNode makeCollisionNode(final Entry e1, final Entry e2) {
         assertTrue(e1.keyHash == e2.keyHash);
         assertFalse(Nodes.equal(e1.key, e2.key));
         final ArrayList<Entry> children = new ArrayList<>();
@@ -215,6 +215,81 @@ public class NodesTest {
         final CollisionNode cNull = makeCollisionNode(
             eNull, new Entry(42, 1, 1));
         assertTrue(dissoc(cNull, 0, 42, 1) == eNull);
+    }
+
+    @Test
+    void seqEntry() {
+        final Entry e = new Entry(1, 1, 1);
+        final Seq s = seq(e, "root");
+        assertEquals("root", s.root);
+        assertTrue(s.entry == e);
+        assertEquals(0, s.entryIndex);
+    }
+
+    @Test
+    void seqArrayNode() {
+        final Entry e1 = new Entry(1, 1, 1);
+        final Entry e2 = new Entry(2, 2, 2);
+        final ArrayNode a = (ArrayNode) assoc(makeArrayNode(e1, 0), 0, e2);
+        final Seq s = seq(a, "root");
+        assertEquals("root", s.root);
+        assertTrue(s.entry == e1);
+        assertEquals(0, s.entryIndex);
+    }
+
+    @Test
+    void seqCollisionNode() {
+        final Entry e1 = new Entry(1, 1, 1);
+        final Entry e2 = new Entry(1, 2, 2);
+        final CollisionNode c = makeCollisionNode(e1, e2);
+        final Seq s = seq(c, "root");
+        assertEquals("root", s.root);
+        assertTrue(s.entry == e1);
+        assertEquals(0, s.entryIndex);
+    }
+
+    @Test
+    void nextEntry() {
+        final Entry e = new Entry(1, 1, 1);
+        final Seq s = next(e, "root", 0, 1, 0);
+        assertNull(s);
+    }
+
+    @Test
+    void nextArrayNode() {
+        final Entry e1 = new Entry(1, 1, 1);
+        final ArrayNode a1 = makeArrayNode(e1, 0);
+        final Seq s1 = next(a1, "root", 0, 1, 0);
+        assertNull(s1);
+
+        final Entry e2 = new Entry(3, 3, 3);
+        final ArrayNode a2 = (ArrayNode) assoc(a1, 0, e2);
+        final Seq s2 = next(a2, "root", 0, 1, 0);
+        assertEquals("root", s2.root);
+        assertTrue(s2.entry == e2);
+        assertEquals(0, s2.entryIndex);
+
+        final Entry e3 = new Entry(33, 5, 5);
+        final ArrayNode a3 = (ArrayNode) assoc(a1, 0, e3);
+        final Seq s3 = next(a3, "root", 0, 1, 0);
+        assertEquals("root", s3.root);
+        assertTrue(s3.entry == e3);
+        assertEquals(0, s3.entryIndex);
+    }
+
+    @Test
+    void nextCollisionNode() {
+        final Entry e1 = new Entry(1, 1, 1);
+        final Entry e2 = new Entry(1, 2, 2);
+        final CollisionNode c = makeCollisionNode(e1, e2);
+
+        final Seq s1 = next(c, "root", 0, 1, 0);
+        assertEquals("root", s1.root);
+        assertTrue(s1.entry == e2);
+        assertEquals(1, s1.entryIndex);
+
+        final Seq s2 = next(c, "root", 0, 1, 1);
+        assertNull(s2);
     }
 
     @Test

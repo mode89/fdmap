@@ -65,6 +65,14 @@ public class Map {
         }
     }
 
+    public Seq seq() {
+        if (root == null) {
+            return null;
+        } else {
+            return Nodes.seq(root, root);
+        }
+    }
+
     public Map difference(final Map other) {
         Object rootDiff = Nodes.difference(0, this.root, other.root);
         if (rootDiff == this.root) {

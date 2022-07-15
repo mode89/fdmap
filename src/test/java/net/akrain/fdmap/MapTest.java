@@ -36,4 +36,17 @@ public class MapTest {
         final Map m = new Map(null);
         assertEquals(42, m.get(1, 42));
     }
+
+    @Test
+    void mapSeq() {
+        final Map m1 = new Map(null);
+        final Seq s1 = m1.seq();
+        assertNull(s1);
+
+        final Map m2 = m1.assoc(1, 2);
+        final Seq s2 = m2.seq();
+        assertTrue(s2.root == m2.root);
+        assertEquals(2, s2.first().value);
+        assertNull(s2.next());
+    }
 }
