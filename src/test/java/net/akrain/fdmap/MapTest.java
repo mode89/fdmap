@@ -110,4 +110,10 @@ public class MapTest {
         assertThrows(UnsupportedOperationException.class,
             () -> blank().cons(42));
     }
+
+    @Test
+    void mapValAt() {
+        assertEquals(42, blank().valAt(1, 42));
+        assertEquals(42, blank().assoc(1, 42).valAt(1));
+    }
 }

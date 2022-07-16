@@ -175,10 +175,10 @@ public class Map implements IPersistentMap {
     // Implementation of ILookup
 
     public Object valAt(Object key) {
-        throw new UnsupportedOperationException();
+        return get(key, null);
     }
 
     public Object valAt(Object key, Object notFound) {
-        throw new UnsupportedOperationException();
+        return get(key, notFound);
     }
 }
