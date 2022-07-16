@@ -12,7 +12,7 @@ public class Map implements IPersistentMap {
     public final ToIntFunction<Object> keyHasher;
 
     private static final ToIntFunction<Object>
-        DEFAULT_KEY_HASHER = key -> key.hashCode();
+        DEFAULT_KEY_HASHER = key -> (key == null) ? 0 : key.hashCode();
     private static final HashMap<ToIntFunction<Object>,Map>
         BLANK_MAPS = new HashMap<>();
 

@@ -73,6 +73,11 @@ public class MapTest {
     }
 
     @Test
+    void nullKey() {
+        assertEquals(42, blank().assoc(null, 42).get(null));
+    }
+
+    @Test
     void nullHasher() {
         assertThrows(IllegalArgumentException.class, () -> blank(null));
     }

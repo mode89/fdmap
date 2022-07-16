@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import net.jqwik.api.*;
 
@@ -147,6 +148,11 @@ public class PropertiesTest {
 
     @Provide
     Arbitrary<List<Tuple>> genBuildOps(Set<Object> allKeys) {
+
+        // Arbitraries.subsetOf() can't handle nulls
+        allKeys = new HashSet<>(allKeys);
+        allKeys.remove(null);
+
         Arbitrary<Object> obj = genObject();
         return Arbitraries.subsetOf(allKeys)
             .map(keys -> keys.stream()
@@ -199,10 +205,20 @@ public class PropertiesTest {
         Arbitrary<Set<Object>> values = genObject().set().ofMinSize(1);
         Arbitrary<Set<Integer>> hashes =
             Arbitraries.integers().set().ofMinSize(2);
-        return Combinators.combine(values, hashes).as(
-            (vs, hs) -> vs.stream()
-                .map(v -> new Key(v, Arbitraries.of(hs).sample()))
-                .collect(Collectors.toSet()));
+        return Combinators.combine(values, hashes)
+            .as((vs, hs) -> vs.stream()
+                .map(v -> (Object) new Key(v, Arbitraries.of(hs).sample()))
+                .collect(Collectors.toSet()))
+            .flatMap(keys -> Arbitraries.of(true, false, false, false, false)
+                .flatMap(new Function<Boolean,Arbitrary<Set<Object>>>() {
+                    @Override
+                    public Arbitrary<Set<Object>> apply(Boolean addNull) {
+                        if (addNull) {
+                            keys.add(null);
+                        }
+                        return Arbitraries.just(keys);
+                    }
+                }));
     }
 
     @Provide
