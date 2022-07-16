@@ -134,4 +134,11 @@ public class MapTest {
         assertEquals(6, m.assocEx(5, 6).get(5));
         assertThrows(RuntimeException.class, () -> m.assocEx(3, 5));
     }
+
+    @Test
+    void getEmptyMap() {
+        final ToIntFunction<Object> hasher = (x) -> (Integer) x;
+        final Map m = blank(hasher).assoc(1, 2);
+        assertTrue(m.empty() == blank(hasher));
+    }
 }

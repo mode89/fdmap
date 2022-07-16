@@ -171,7 +171,7 @@ public class Map implements IPersistentMap {
     }
 
     public Map empty() {
-        throw new UnsupportedOperationException();
+        return blank(keyHasher);
     }
 
     public boolean equiv(Object obj) {
