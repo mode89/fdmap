@@ -15,7 +15,7 @@ import net.jqwik.api.*;
 public class PropertiesTest {
 
     @Property
-    boolean sameAsBuiltinMap(@ForAll("genOpsAndKeys") Tuple opsAndKeys) {
+    boolean build(@ForAll("genOpsAndKeys") Tuple opsAndKeys) {
         final List<Tuple> ops = (List<Tuple>) opsAndKeys.items().get(0);
         final Set<Object> keys = (Set<Object>) opsAndKeys.items().get(1);
         final HashMap<Object,Object> hmap = applyOps(ops, new HashMap<>());
