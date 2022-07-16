@@ -52,10 +52,15 @@ public class Nodes {
     public static class ArrayNode {
         public final Object[] children;
         public final int childrenCount;
+        public final int entryCount;
 
-        public ArrayNode(final Object[] children, final int childrenCount) {
+        public ArrayNode(
+                final Object[] children,
+                final int childrenCount,
+                final int entryCount) {
             this.children = children;
             this.childrenCount = childrenCount;
+            this.entryCount = entryCount;
         }
     }
 
@@ -100,7 +105,7 @@ public class Nodes {
         final Object[] children = new Object[32];
         final int index = arrayIndex(shift, getKeyHash(node));
         children[index] = node;
-        return new ArrayNode(children, 1);
+        return new ArrayNode(children, 1, countEntries(node));
     }
 
     public static Object assoc(
@@ -115,7 +120,10 @@ public class Nodes {
             if (child == null) {
                 final Object[] newChildren = node.children.clone();
                 newChildren[childIndex] = entry;
-                return new ArrayNode(newChildren, node.childrenCount + 1);
+                return new ArrayNode(
+                    newChildren,
+                    node.childrenCount + 1,
+                    node.entryCount + 1);
             } else {
                 final Object newChild = assoc(child, shift + 5, entry);
                 if (child == newChild) {
@@ -123,7 +131,12 @@ public class Nodes {
                 } else {
                     final Object[] newChildren = node.children.clone();
                     newChildren[childIndex] = newChild;
-                    return new ArrayNode(newChildren, node.childrenCount);
+                    return new ArrayNode(
+                        newChildren,
+                        node.childrenCount,
+                        node.entryCount
+                            + countEntries(newChild)
+                            - countEntries(child));
                 }
             }
         } else if (nodeClass == Entry.class) {
@@ -241,14 +254,19 @@ public class Nodes {
                                 node.children.clone();
                             newChildren[childIndex] = null;
                             return new ArrayNode(
-                                newChildren, node.childrenCount - 1);
+                                newChildren,
+                                node.childrenCount - 1,
+                                node.entryCount - 1);
                         } else {
                             return null;
                         }
                     } else {
                         final Object[] newChildren = node.children.clone();
                         newChildren[childIndex] = newChild;
-                        return new ArrayNode(newChildren, node.childrenCount);
+                        return new ArrayNode(
+                            newChildren,
+                            node.childrenCount,
+                            node.entryCount - 1);
                     }
                 }
             }
@@ -283,6 +301,19 @@ public class Nodes {
                     return node;
                 }
             }
+        } else {
+            throw new RuntimeException("Unexpected type of node");
+        }
+    }
+
+    public static int countEntries(final Object nodeObj) {
+        final Class<?> nodeClass = nodeObj.getClass();
+        if (nodeClass == ArrayNode.class) {
+            return ((ArrayNode) nodeObj).entryCount;
+        } else if (nodeClass == Entry.class) {
+            return 1;
+        } else if (nodeClass == CollisionNode.class) {
+            return ((CollisionNode) nodeObj).children.size();
         } else {
             throw new RuntimeException("Unexpected type of node");
         }
@@ -384,6 +415,7 @@ public class Nodes {
                     final ArrayNode rightNode = (ArrayNode) rightNodeObj;
                     final Object[] children = new Object[32];
                     int childrenCount = 0;
+                    int entryCount = 0;
                     boolean returnLeftNode = true;
                     for (int i = 0; i < 32; ++ i) {
                         final Object leftChild = leftNode.children[i];
@@ -393,6 +425,7 @@ public class Nodes {
                         children[i] = child;
                         if (child != null) {
                             childrenCount += 1;
+                            entryCount += countEntries(child);
                         }
                         if (child != leftChild) {
                             returnLeftNode = false;
@@ -403,7 +436,8 @@ public class Nodes {
                     } else if (returnLeftNode) {
                         return leftNode;
                     } else {
-                        return new ArrayNode(children, childrenCount);
+                        return new ArrayNode(
+                            children, childrenCount, entryCount);
                     }
                 } else if (rightNodeClass == Entry.class) {
                     return differenceWithEntry(

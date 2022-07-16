@@ -146,7 +146,11 @@ public class Map implements IPersistentMap {
     // Implementation of IPersistentCollection
 
     public int count() {
-        throw new UnsupportedOperationException();
+        if (root == null) {
+            return 0;
+        } else {
+            return Nodes.countEntries(root);
+        }
     }
 
     public Map cons(Object obj) {

@@ -121,6 +121,7 @@ public class PropertiesTest {
         assertTrue(unusedKeys.stream()
             .map(k -> fdmap.get(k))
             .allMatch(x -> x == null));
+        assertEquals(hmap.size(), fdmap.count());
     }
 
     private static HashMap<Object,Object> hashMapDifference(

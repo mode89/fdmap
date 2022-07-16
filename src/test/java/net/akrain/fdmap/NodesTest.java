@@ -378,4 +378,14 @@ public class NodesTest {
         assertTrue(getEntry(d, 0, 1, 2) == e2);
         assertNull(getEntry(d, 0, 1, 3));
     }
+
+    @Test
+    void countEntriesTest() {
+        final Entry e = new Entry(1, 1, 1);
+        final ArrayNode a = makeArrayNode(e, 0);
+        final CollisionNode c = makeCollisionNode(e, new Entry(1, 2, 2));
+        assertEquals(1, countEntries(e));
+        assertEquals(1, countEntries(a));
+        assertEquals(2, countEntries(c));
+    }
 }
