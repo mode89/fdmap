@@ -126,4 +126,12 @@ public class MapTest {
         assertTrue(m.containsKey(1));
         assertFalse(m.containsKey(42));
     }
+
+    @Test
+    void implIPersistentMap() {
+        final Map m = blank().assoc(1, 2).assoc(3, 4);
+        assertEquals(4, m.without(1).get(3));
+        assertEquals(6, m.assocEx(5, 6).get(5));
+        assertThrows(RuntimeException.class, () -> m.assocEx(3, 5));
+    }
 }

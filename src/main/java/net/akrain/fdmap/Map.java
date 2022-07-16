@@ -119,11 +119,14 @@ public class Map implements IPersistentMap {
     // Implementation of IPersistentMap
 
     public Map assocEx(Object key, Object val) {
-        throw new UnsupportedOperationException();
+        if (containsKey(key)) {
+            throw new RuntimeException("Key already present");
+        }
+        return assoc(key, val);
     }
 
     public Map without(Object key) {
-        throw new UnsupportedOperationException();
+        return dissoc(key);
     }
 
     // Implementation of Iterable
