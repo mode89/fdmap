@@ -141,4 +141,10 @@ public class MapTest {
         final Map m = blank(hasher).assoc(1, 2);
         assertTrue(m.empty() == blank(hasher));
     }
+
+    @Test
+    void countEntries() {
+        assertEquals(0, blank().count());
+        assertEquals(1, blank().assoc(null, null).count());
+    }
 }
