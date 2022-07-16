@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -130,8 +131,8 @@ public class PropertiesTest {
             final Object key = entry.getKey();
             final Object value = entry.getValue();
             final Object rightValue = rightMap.get(key);
-            if (rightValue == null
-                || !rightMap.get(key).equals(value)) {
+            if (!rightMap.containsKey(key)
+                || !Objects.equals(rightMap.get(key), value)) {
                 result.put(key, value);
             }
         }
