@@ -5,6 +5,7 @@ import clojure.lang.IPersistentVector;
 import java.util.function.ToIntFunction;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Objects;
 
 public class Map implements IPersistentMap {
 
@@ -12,7 +13,7 @@ public class Map implements IPersistentMap {
     public final ToIntFunction<Object> keyHasher;
 
     private static final ToIntFunction<Object>
-        DEFAULT_KEY_HASHER = key -> (key == null) ? 0 : key.hashCode();
+        DEFAULT_KEY_HASHER = key -> Objects.hashCode(key);
     private static final HashMap<ToIntFunction<Object>,Map>
         BLANK_MAPS = new HashMap<>();
 

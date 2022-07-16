@@ -2,6 +2,7 @@ package net.akrain.fdmap;
 
 import clojure.lang.IMapEntry;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Optional;
 
 public class Nodes {
@@ -76,14 +77,6 @@ public class Nodes {
         }
     }
 
-    protected static boolean equal(final Object a, final Object b) {
-        if (a != null) {
-            return a.equals(b);
-        } else {
-            return a == b;
-        }
-    }
-
     private static int arrayIndex(final int shift, final int keyHash) {
         return (keyHash >>> shift) & 0x1F;
     }
@@ -141,8 +134,8 @@ public class Nodes {
             }
         } else if (nodeClass == Entry.class) {
             final Entry node = (Entry) nodeObj;
-            if (equal(node.key, entry.key)) {
-                if (equal(node.value, entry.value)) {
+            if (Objects.equals(node.key, entry.key)) {
+                if (Objects.equals(node.value, entry.value)) {
                     return node;
                 } else {
                     return entry;
@@ -163,14 +156,15 @@ public class Nodes {
             if (node.keyHash == entry.keyHash) {
                 int childIndex = -1;
                 for (int i = 0; i < node.children.size(); ++ i) {
-                    if (equal(node.children.get(i).key, entry.key)) {
+                    if (Objects.equals(
+                                node.children.get(i).key, entry.key)) {
                         childIndex = i;
                         break;
                     }
                 }
                 if (childIndex != -1) {
                     final Entry child = node.children.get(childIndex);
-                    if (equal(child.value, entry.value)) {
+                    if (Objects.equals(child.value, entry.value)) {
                         return node;
                     } else {
                         final ArrayList<Entry> newChildren =
@@ -211,7 +205,7 @@ public class Nodes {
         } else if (nodeClass == Entry.class) {
             final Entry node = (Entry) nodeObj;
             if (node.keyHash == keyHash) {
-                if (equal(node.key, key)) {
+                if (Objects.equals(node.key, key)) {
                     return node;
                 } else {
                     return null;
@@ -222,7 +216,7 @@ public class Nodes {
         } else if (nodeClass == CollisionNode.class) {
             return ((CollisionNode) nodeObj).children
                 .stream()
-                .filter(e -> equal(e.key, key))
+                .filter(e -> Objects.equals(e.key, key))
                 .findFirst()
                 .orElse(null);
         } else {
@@ -272,7 +266,7 @@ public class Nodes {
             }
         } else if (nodeClass == Entry.class) {
             final Entry node = (Entry) nodeObj;
-            if (equal(node.key, key)) {
+            if (Objects.equals(node.key, key)) {
                 return null;
             } else {
                 return node;
@@ -283,7 +277,7 @@ public class Nodes {
                 return node;
             } else {
                 final Optional<Entry> child = node.children.stream()
-                    .filter(e -> equal(e.key, key))
+                    .filter(e -> Objects.equals(e.key, key))
                     .findFirst();
                 if (child.isPresent()) {
                     if (node.children.size() > 2) {
@@ -293,7 +287,7 @@ public class Nodes {
                         return new CollisionNode(newChildren, keyHash);
                     } else {
                         return node.children.stream()
-                            .filter(e -> !equal(e.key, key))
+                            .filter(e -> !Objects.equals(e.key, key))
                             .findFirst()
                             .get();
                     }
@@ -389,7 +383,7 @@ public class Nodes {
         if (leftEntry == null) {
             return leftNode;
         } else if (leftEntry == rightEntry
-                   || equal(leftEntry.value, rightEntry.value)) {
+                   || Objects.equals(leftEntry.value, rightEntry.value)) {
             return dissoc(
                 leftNode,
                 shift,
@@ -451,7 +445,7 @@ public class Nodes {
                             result, shift, rightEntry.keyHash, rightEntry.key);
                         if (leftEntry != null
                             && (leftEntry == rightEntry
-                                || equal(
+                                || Objects.equals(
                                     leftEntry.value,
                                     rightEntry.value))) {
                             result = dissoc(
@@ -478,15 +472,17 @@ public class Nodes {
                     if (rightEntry == null) {
                         return leftNode;
                     } else if (leftNode == rightEntry
-                               || equal(leftNode.value, rightEntry.value)) {
+                               || Objects.equals(
+                                    leftNode.value, rightEntry.value)) {
                         return null;
                     } else {
                         return leftNode;
                     }
                 } else if (rightNodeClass == Entry.class) {
                     final Entry rightNode = (Entry) rightNodeObj;
-                    if (equal(leftNode.key, rightNode.key)
-                        && equal(leftNode.value, rightNode.value)) {
+                    if (Objects.equals(leftNode.key, rightNode.key)
+                        && Objects.equals(
+                            leftNode.value, rightNode.value)) {
                         return null;
                     } else {
                         return leftNode;
@@ -507,7 +503,8 @@ public class Nodes {
                             leftEntry.keyHash,
                             leftEntry.key);
                         if (rightEntry == null
-                            || !equal(rightEntry.value, leftEntry.value)) {
+                            || !Objects.equals(
+                                    rightEntry.value, leftEntry.value)) {
                             children.add(leftEntry);
                         }
                     }

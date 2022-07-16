@@ -44,8 +44,8 @@ public class PropertiesTest {
 
         final boolean equalEntrySets = hmapEntries.stream()
             .filter(he -> fdmapEntries.stream()
-                .filter(fde -> Nodes.equal(he.getKey(), fde.key)
-                    && Nodes.equal(he.getValue(), fde.value))
+                .filter(fde -> Objects.equals(he.getKey(), fde.key)
+                    && Objects.equals(he.getValue(), fde.value))
                 .count() == 1)
             .count() == hmapEntries.size();
 

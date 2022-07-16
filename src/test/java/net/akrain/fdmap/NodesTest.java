@@ -4,13 +4,14 @@ import static net.akrain.fdmap.Nodes.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import org.junit.jupiter.api.Test;
 
 public class NodesTest {
 
     static CollisionNode makeCollisionNode(final Entry e1, final Entry e2) {
         assertTrue(e1.keyHash == e2.keyHash);
-        assertFalse(Nodes.equal(e1.key, e2.key));
+        assertFalse(Objects.equals(e1.key, e2.key));
         final ArrayList<Entry> children = new ArrayList<>();
         children.add(e1);
         children.add(e2);
