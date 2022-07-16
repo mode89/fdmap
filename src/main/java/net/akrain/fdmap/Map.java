@@ -63,8 +63,7 @@ public class Map implements IPersistentMap {
         if (root == null) {
             return notFound;
         } else {
-            final Nodes.Entry entry = Nodes.getEntry(
-                root, 0, keyHasher.applyAsInt(key), key);
+            final Nodes.Entry entry = entryAt(key);
             if (entry == null) {
                 return notFound;
             } else {
@@ -136,11 +135,11 @@ public class Map implements IPersistentMap {
     // Implementation of Associative
 
     public boolean containsKey(Object key) {
-        throw new UnsupportedOperationException();
+        return entryAt(key) != null;
     }
 
     public Nodes.Entry entryAt(Object key) {
-        throw new UnsupportedOperationException();
+        return Nodes.getEntry(root, 0, keyHasher.applyAsInt(key), key);
     }
 
     // Implementation of IPersistentCollection

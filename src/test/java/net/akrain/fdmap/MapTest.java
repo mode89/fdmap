@@ -116,4 +116,14 @@ public class MapTest {
         assertEquals(42, blank().valAt(1, 42));
         assertEquals(42, blank().assoc(1, 42).valAt(1));
     }
+
+    @Test
+    void implAssociative() {
+        final Map m = blank().assoc(1, 42);
+        assertNull(m.entryAt(42));
+        assertEquals(1, m.entryAt(1).getKey());
+        assertEquals(42, m.entryAt(1).getValue());
+        assertTrue(m.containsKey(1));
+        assertFalse(m.containsKey(42));
+    }
 }
