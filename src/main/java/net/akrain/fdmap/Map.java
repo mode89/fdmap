@@ -5,6 +5,7 @@ import clojure.lang.IPersistentVector;
 import java.util.function.ToIntFunction;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 
 public class Map implements IPersistentMap {
@@ -132,8 +133,23 @@ public class Map implements IPersistentMap {
 
     // Implementation of Iterable
 
-    public Iterator<Object> iterator() {
-        throw new UnsupportedOperationException();
+    public Iterator<Nodes.Entry> iterator() {
+        final Seq thisSeq = this.seq();
+        return new Iterator<Nodes.Entry>() {
+            private Seq seq = thisSeq;
+            public boolean hasNext() {
+                return seq != null;
+            }
+            public Nodes.Entry next() {
+                if (seq != null) {
+                    final Nodes.Entry next = seq.first();
+                    seq = seq.next();
+                    return next;
+                } else {
+                    throw new NoSuchElementException();
+                }
+            }
+        };
     }
 
     // Implementation of Associative

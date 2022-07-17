@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import clojure.lang.PersistentVector;
 import java.util.function.ToIntFunction;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 import org.junit.jupiter.api.Test;
 
 public class MapTest {
@@ -146,5 +148,14 @@ public class MapTest {
     void countEntries() {
         assertEquals(0, blank().count());
         assertEquals(1, blank().assoc(null, null).count());
+    }
+
+    @Test
+    void iterable() {
+        final Iterator<Nodes.Entry> it = blank().assoc(1, 2).iterator();
+        assertTrue(it.hasNext());
+        assertEquals(new Nodes.Entry(1, 1, 2), it.next());
+        assertFalse(it.hasNext());
+        assertThrows(NoSuchElementException.class, () -> it.next());
     }
 }
