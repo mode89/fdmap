@@ -389,4 +389,25 @@ public class NodesTest {
         assertEquals(1, countEntries(a));
         assertEquals(2, countEntries(c));
     }
+
+    @Test
+    void entryHash() {
+        final Entry e = new Entry(1, 1, 1);
+        assertTrue(e.hashCode() == e.hashCode());
+        assertTrue(e.hashCode() == new Entry(1, 1, 1).hashCode());
+        assertTrue(e.hashCode() != new Entry(2, 2, 2).hashCode());
+    }
+
+    @Test
+    void entryEquality() {
+        assertTrue(Objects.equals(new Entry(1, 1, 1), new Entry(1, 1, 1)));
+        assertFalse(Objects.equals(new Entry(1, 1, 1), new Entry(1, 1, 2)));
+        assertFalse(Objects.equals(new Entry(1, 1, 1), new Entry(2, 2, 1)));
+        assertFalse(Objects.equals(new Entry(1, 1, 1), new Entry(2, 2, 2)));
+        assertFalse(Objects.equals(
+            new Entry(1, 1, 1), java.util.Map.entry(1, 2)));
+        assertTrue(Objects.equals(
+            new Entry(1, 1, 2), java.util.Map.entry(1, 2)));
+        assertFalse(Objects.equals(new Entry(1, 1, 1), 1));
+    }
 }

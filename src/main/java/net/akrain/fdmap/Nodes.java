@@ -11,6 +11,8 @@ public class Nodes {
         public final int keyHash;
         public final Object key;
         public final Object value;
+        private int _hash;
+        private boolean _hashCached;
 
         public Entry(
                 final int keyHash,
@@ -19,6 +21,29 @@ public class Nodes {
             this.keyHash = keyHash;
             this.key = key;
             this.value = value;
+            this._hash = 0;
+            this._hashCached = false;
+        }
+
+        @Override
+        public boolean equals(Object otherObj) {
+            if (otherObj instanceof java.util.Map.Entry) {
+                final java.util.Map.Entry other =
+                    (java.util.Map.Entry) otherObj;
+                return Objects.equals(this.key, other.getKey())
+                    && Objects.equals(this.value, other.getValue());
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            if (!_hashCached) {
+                _hash = Objects.hash(key, value);
+                _hashCached = true;
+            }
+            return _hash;
         }
 
         public String toString() {
