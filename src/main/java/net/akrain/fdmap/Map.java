@@ -42,6 +42,7 @@ public class Map implements IPersistentMap {
         this.keyHasher = hasher;
     }
 
+    @Override
     public Map assoc(final Object key, final Object value) {
         final Nodes.Entry entry = new Nodes.Entry(
             keyHasher.applyAsInt(key), key, value);
@@ -92,6 +93,7 @@ public class Map implements IPersistentMap {
         }
     }
 
+    @Override
     public Seq seq() {
         if (root == null) {
             return null;
@@ -120,6 +122,7 @@ public class Map implements IPersistentMap {
 
     // Implementation of IPersistentMap
 
+    @Override
     public Map assocEx(Object key, Object val) {
         if (containsKey(key)) {
             throw new RuntimeException("Key already present");
@@ -127,12 +130,14 @@ public class Map implements IPersistentMap {
         return assoc(key, val);
     }
 
+    @Override
     public Map without(Object key) {
         return dissoc(key);
     }
 
     // Implementation of Iterable
 
+    @Override
     public Iterator<Nodes.Entry> iterator() {
         final Seq thisSeq = this.seq();
         return new Iterator<Nodes.Entry>() {
@@ -154,16 +159,19 @@ public class Map implements IPersistentMap {
 
     // Implementation of Associative
 
+    @Override
     public boolean containsKey(Object key) {
         return entryAt(key) != null;
     }
 
+    @Override
     public Nodes.Entry entryAt(Object key) {
         return Nodes.getEntry(root, 0, keyHasher.applyAsInt(key), key);
     }
 
     // Implementation of IPersistentCollection
 
+    @Override
     public int count() {
         if (root == null) {
             return 0;
@@ -172,6 +180,7 @@ public class Map implements IPersistentMap {
         }
     }
 
+    @Override
     public Map cons(Object obj) {
         if (obj instanceof java.util.Map.Entry) {
             final java.util.Map.Entry<Object,Object> e =
@@ -187,20 +196,24 @@ public class Map implements IPersistentMap {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public Map empty() {
         return blank(keyHasher);
     }
 
+    @Override
     public boolean equiv(Object obj) {
         throw new UnsupportedOperationException();
     }
 
     // Implementation of ILookup
 
+    @Override
     public Object valAt(Object key) {
         return get(key, null);
     }
 
+    @Override
     public Object valAt(Object key, Object notFound) {
         return get(key, notFound);
     }
