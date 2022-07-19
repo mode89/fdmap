@@ -1,14 +1,13 @@
 package net.akrain.fdmap;
 
-import clojure.lang.IPersistentMap;
-import clojure.lang.IPersistentVector;
+import clojure.lang.APersistentMap;
 import java.util.function.ToIntFunction;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
-public class Map implements IPersistentMap {
+public class Map extends APersistentMap {
 
     public final Object root;
     public final ToIntFunction<Object> keyHasher;
@@ -58,6 +57,7 @@ public class Map implements IPersistentMap {
         }
     }
 
+    @Override
     public Object get(final Object key) {
         return get(key, null);
     }
@@ -178,22 +178,6 @@ public class Map implements IPersistentMap {
         } else {
             return Nodes.countEntries(root);
         }
-    }
-
-    @Override
-    public Map cons(Object obj) {
-        if (obj instanceof java.util.Map.Entry) {
-            final java.util.Map.Entry<Object,Object> e =
-                (java.util.Map.Entry) obj;
-            return assoc(e.getKey(), e.getValue());
-		} else if (obj instanceof IPersistentVector) {
-            final IPersistentVector v = (IPersistentVector) obj;
-            if (v.count() != 2)
-                throw new IllegalArgumentException(
-                    "Vector arg to map conj must be a pair");
-            return assoc(v.nth(0), v.nth(1));
-        }
-        throw new UnsupportedOperationException();
     }
 
     @Override

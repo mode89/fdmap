@@ -3,7 +3,6 @@ package net.akrain.fdmap;
 import static net.akrain.fdmap.Map.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-import clojure.lang.PersistentVector;
 import java.util.function.ToIntFunction;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -97,20 +96,6 @@ public class MapTest {
         assertTrue(blank() == blank());
         assertTrue(blank(hasher) == blank(hasher));
         assertTrue(blank() != blank(hasher));
-    }
-
-    @Test
-    void mapCons() {
-        assertEquals(42, blank()
-            .cons(new Nodes.Entry(1, 1, 42))
-            .get(1));
-        assertEquals(42, blank()
-            .cons(PersistentVector.create(1, 42))
-            .get(1));
-        assertThrows(IllegalArgumentException.class,
-            () -> blank().cons(PersistentVector.create(1, 42, 3)));
-        assertThrows(UnsupportedOperationException.class,
-            () -> blank().cons(42));
     }
 
     @Test
