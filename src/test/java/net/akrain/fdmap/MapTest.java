@@ -143,4 +143,10 @@ public class MapTest {
         assertFalse(it.hasNext());
         assertThrows(NoSuchElementException.class, () -> it.next());
     }
+
+    @Test
+    void equivalence() {
+        assertTrue(blank().assoc(1, 2).equiv(blank().assoc(1, 2)));
+        assertTrue(blank().assoc(1, 2).equiv(java.util.Map.of(1, 2)));
+    }
 }

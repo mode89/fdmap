@@ -11,6 +11,7 @@ public class Nodes {
         public final int keyHash;
         public final Object key;
         public final Object value;
+
         private int _hash;
         private boolean _hashCached;
 
@@ -395,6 +396,96 @@ public class Nodes {
             }
         } else {
             throw new RuntimeException("Unexpected type of node");
+        }
+    }
+
+    public static boolean equiv(
+            final int shift,
+            final Object leftNodeObj,
+            final Object rightNodeObj) {
+        if (leftNodeObj == rightNodeObj) {
+            return true;
+        } else if (leftNodeObj != null && rightNodeObj != null) {
+            if (countEntries(leftNodeObj) !=  countEntries(rightNodeObj)) {
+                return false;
+            } else {
+                final Class<?> leftNodeClass = leftNodeObj.getClass();
+                final Class<?> rightNodeClass = rightNodeObj.getClass();
+                if (leftNodeClass == ArrayNode.class) {
+                    final ArrayNode leftNode = (ArrayNode) leftNodeObj;
+                    if (rightNodeClass == ArrayNode.class) {
+                        final ArrayNode rightNode = (ArrayNode) rightNodeObj;
+                        for (int i = 0; i < 32; ++ i) {
+                            final Object leftChild = leftNode.children[i];
+                            final Object rightChild = rightNode.children[i];
+                            if (!equiv(shift + 5, leftChild, rightChild)) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    } else if (rightNodeClass == Entry.class) {
+                        return equiv(shift, rightNodeObj, leftNode);
+                    } else if (rightNodeClass == CollisionNode.class) {
+                        return equiv(shift, rightNodeObj, leftNode);
+                    } else {
+                        throw new UnsupportedOperationException();
+                    }
+                } else if (leftNodeClass == Entry.class) {
+                    final Entry leftNode = (Entry) leftNodeObj;
+                    if (rightNodeClass == ArrayNode.class) {
+                        final Entry rightEntry = getEntry(
+                            rightNodeObj,
+                            shift,
+                            leftNode.keyHash,
+                            leftNode.key);
+                        if (rightEntry == null) {
+                            return false;
+                        } else if (leftNode == rightEntry
+                                   || Objects.equals(
+                                        leftNode.value,
+                                        rightEntry.value)) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    } else if (rightNodeClass == Entry.class) {
+                        final Entry rightNode = (Entry) rightNodeObj;
+                        if (Objects.equals(leftNode.key, rightNode.key) &&
+                            Objects.equals(leftNode.value, rightNode.value)) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    } else {
+                        throw new UnsupportedOperationException();
+                    }
+                } else if (leftNodeClass == CollisionNode.class) {
+                    final CollisionNode leftNode = (CollisionNode) leftNodeObj;
+                    if (rightNodeClass == ArrayNode.class
+                        || rightNodeClass == CollisionNode.class) {
+                        for (Entry leftEntry: leftNode.children) {
+                            final Entry rightEntry = getEntry(
+                                rightNodeObj,
+                                shift,
+                                leftEntry.keyHash,
+                                leftEntry.key);
+                            if (rightEntry == null
+                                || !Objects.equals(
+                                        rightEntry.value,
+                                        leftEntry.value)) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    } else {
+                        throw new UnsupportedOperationException();
+                    }
+                } else {
+                    throw new UnsupportedOperationException();
+                }
+            }
+        } else {
+            return false;
         }
     }
 

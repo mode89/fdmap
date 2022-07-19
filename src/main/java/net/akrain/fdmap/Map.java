@@ -186,8 +186,13 @@ public class Map extends APersistentMap {
     }
 
     @Override
-    public boolean equiv(Object obj) {
-        throw new UnsupportedOperationException();
+    public boolean equiv(Object otherObj) {
+        if (otherObj instanceof Map) {
+            final Map other = (Map) otherObj;
+            return Nodes.equiv(0, root, other.root);
+        } else {
+            return super.equiv(otherObj);
+        }
     }
 
     // Implementation of ILookup

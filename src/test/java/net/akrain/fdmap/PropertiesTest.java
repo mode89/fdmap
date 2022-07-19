@@ -75,6 +75,8 @@ public class PropertiesTest {
             hashMapDifference(hmap2, hmap1),
             keys);
 
+        assertEquals(hmap1.equals(hmap2), fdmap1.equiv(fdmap2));
+
         return true;
     }
 

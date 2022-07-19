@@ -410,4 +410,65 @@ public class NodesTest {
             new Entry(1, 1, 2), java.util.Map.entry(1, 2)));
         assertFalse(Objects.equals(new Entry(1, 1, 1), 1));
     }
+
+    @Test
+    void equivIdentical() {
+        final Entry e = new Entry(1, 1, 1);
+        assertTrue(equiv(0, e, e));
+    }
+
+    @Test
+    void equivNull() {
+        final Entry e = new Entry(1, 1, 1);
+        assertTrue(equiv(0, null, null));
+        assertFalse(equiv(0, e, null));
+        assertFalse(equiv(0, null, e));
+    }
+
+    @Test
+    void equivEntry() {
+        final Entry e = new Entry(1, 1, 1);
+        assertTrue(equiv(0, e, new Entry(1, 1, 1)));
+        assertFalse(equiv(0, e, new Entry(1, 2, 1)));
+        assertFalse(equiv(0, e, new Entry(1, 1, 2)));
+        assertFalse(equiv(0, e, new Entry(1, 2, 2)));
+        assertFalse(equiv(0, e, makeCollisionNode(e, new Entry(1, 2, 2))));
+        assertFalse(equiv(0, e, makeArrayNode(new Entry(2, 2, 2), 0)));
+        assertTrue(equiv(0, e, makeArrayNode(e, 0)));
+        assertTrue(equiv(0, e, makeArrayNode(new Entry(1, 1, 1), 0)));
+        assertFalse(equiv(0, e, makeArrayNode(new Entry(1, 1, 2), 0)));
+    }
+
+    @Test
+    void equivArrayNode() {
+        assertTrue(equiv(0, makeArrayNode(new Entry(1, 1, 1), 0),
+            new Entry(1, 1, 1)));
+        assertTrue(equiv(0,
+            makeArrayNode(new Entry(1, 1, 1), 0),
+            makeArrayNode(new Entry(1, 1, 1), 0)));
+        assertFalse(equiv(0,
+            makeArrayNode(new Entry(1, 1, 1), 0),
+            makeArrayNode(new Entry(1, 1, 2), 0)));
+        assertTrue(equiv(0,
+            makeArrayNode(
+                makeCollisionNode(
+                    new Entry(1, 1, 1),
+                    new Entry(1, 2, 2)), 0),
+            makeCollisionNode(
+                new Entry(1, 2, 2),
+                new Entry(1, 1, 1))));
+    }
+
+    @Test
+    void equivCollisionNode() {
+        assertTrue(equiv(0,
+            makeCollisionNode(new Entry(1, 1, 1), new Entry(1, 2, 2)),
+            makeCollisionNode(new Entry(1, 2, 2), new Entry(1, 1, 1))));
+        assertFalse(equiv(0,
+            makeCollisionNode(new Entry(1, 1, 1), new Entry(1, 2, 2)),
+            makeCollisionNode(new Entry(1, 1, 1), new Entry(1, 2, 1))));
+        assertFalse(equiv(0,
+            makeCollisionNode(new Entry(1, 1, 1), new Entry(1, 2, 2)),
+            makeCollisionNode(new Entry(1, 1, 1), new Entry(1, 3, 3))));
+    }
 }
