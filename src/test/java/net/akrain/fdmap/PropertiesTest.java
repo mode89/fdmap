@@ -145,48 +145,62 @@ public class PropertiesTest {
     @Provide
     Arbitrary<Tuple> genDifferenceSamples() {
         return genKeys()
-            .flatMap(keys ->
-                Combinators.combine(genBuildOps(keys), genOps(keys)).as(
-                    (buildOps, ops) -> Tuple.of(keys, buildOps, ops)));
+            .flatMap(knownKeys -> genValues()
+                .flatMap(knownValues ->
+                    Combinators.combine(
+                        genBuildOps(knownKeys, knownValues),
+                        genOps(knownKeys, knownValues))
+                        .as((buildOps, ops) ->
+                            Tuple.of(knownKeys, buildOps, ops))));
     }
 
     @Provide
-    Arbitrary<List<Tuple>> genBuildOps(Set<Object> allKeys) {
+    Arbitrary<List<Tuple>> genBuildOps(
+            Set<Object> knownKeys,
+            Set<Object> knownValues) {
 
         // Arbitraries.subsetOf() can't handle nulls
-        allKeys = new HashSet<>(allKeys);
-        allKeys.remove(null);
+        knownKeys = new HashSet<>(knownKeys);
+        knownKeys.remove(null);
 
-        Arbitrary<Object> obj = genObject();
-        return Arbitraries.subsetOf(allKeys)
+        Arbitrary<Object> value = Arbitraries.of(knownValues);
+        return Arbitraries.subsetOf(knownKeys)
             .map(keys -> keys.stream()
-                .map(k -> Tuple.of("assoc", k, obj.sample()))
+                .map(k -> Tuple.of("assoc", k, value.sample()))
                 .collect(Collectors.toList()));
     }
 
     @Provide
     Arbitrary<Tuple> genOpsAndKeys() {
         return genKeys()
-            .flatMap(keys -> genOps(keys)
-                .flatMap(ops -> Arbitraries.just(Tuple.of(ops, keys))));
+            .flatMap(knownKeys -> genValues()
+                .flatMap(knownValues -> genOps(knownKeys, knownValues)
+                    .flatMap(ops ->
+                        Arbitraries.just(Tuple.of(ops, knownKeys)))));
     }
 
     @Provide
-    Arbitrary<List<Tuple>> genOps(Set<Object> ks) {
-        return genOp(ks).list();
+    Arbitrary<List<Tuple>> genOps(
+            Set<Object> knownKeys,
+            Set<Object> knownValues) {
+        return genOp(knownKeys, knownValues).list();
     }
 
     @Provide
-    Arbitrary<Tuple> genOp(Set<Object> ks) {
-        return Arbitraries.oneOf(genAssocOp(ks), genDissocOp(ks));
+    Arbitrary<Tuple> genOp(Set<Object> knownKeys, Set<Object> knownValues) {
+        return Arbitraries.oneOf(
+            genAssocOp(knownKeys, knownValues),
+            genDissocOp(knownKeys));
     }
 
     @Provide
-    Arbitrary<Tuple> genAssocOp(Set<Object> ks) {
+    Arbitrary<Tuple> genAssocOp(
+            Set<Object> knownKeys,
+            Set<Object> knownValues) {
         return Combinators.combine(
                 Arbitraries.just("assoc"),
-                Arbitraries.of(ks),
-                genValue())
+                Arbitraries.of(knownKeys),
+                Arbitraries.of(knownValues))
             .as((op, k, v) -> Tuple.of(op, k, v));
     }
 
@@ -200,8 +214,8 @@ public class PropertiesTest {
     }
 
     @Provide
-    Arbitrary<Object> genValue() {
-        return genObject();
+    Arbitrary<Set<Object>> genValues() {
+        return genObject().set().ofMinSize(1);
     }
 
     @Provide
