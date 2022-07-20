@@ -9,6 +9,13 @@ import org.junit.jupiter.api.Test;
 
 public class NodesTest {
 
+    static ArrayNode makeArrayNode2(
+            final Entry e1,
+            final Entry e2,
+            final int shift) {
+        return (ArrayNode) assoc(makeArrayNode(e1, 0), 0, e2);
+    }
+
     static CollisionNode makeCollisionNode(final Entry e1, final Entry e2) {
         assertTrue(e1.keyHash == e2.keyHash);
         assertFalse(Objects.equals(e1.key, e2.key));
@@ -179,20 +186,21 @@ public class NodesTest {
         final ArrayNode a1 = makeArrayNode(e1, 0);
         assertTrue(dissoc(a1, 0, 2, 2) == a1);
         assertTrue(dissoc(a1, 0, 1, 2) == a1);
-        assertNull(dissoc(a1, 0, 1, 1));
 
         final Entry e2 = new Entry(2, 2, 2);
         final ArrayNode a2 = (ArrayNode) assoc(a1, 0, e2);
-        final ArrayNode n2 = (ArrayNode) dissoc(a2, 0, 1, 1);
-        assertNull(n2.children[1]);
-        assertTrue(n2.children[2] == e2);
-        assertEquals(1, n2.childrenCount);
+        assertTrue(dissoc(a2, 0, 1, 1) == e2);
 
         final Entry e3 = new Entry(33, 3, 3);
         final ArrayNode a3 = (ArrayNode) assoc(a1, 0, e3);
-        final ArrayNode n3 = (ArrayNode) dissoc(a3, 0, 1, 1);
-        assertNull(getEntry(n3, 0, 1, 1));
-        assertTrue(getEntry(n3, 0, 33, 3) == e3);
+        assertTrue(dissoc(a3, 0, 1, 1) == e3);
+
+        final Entry e4 = new Entry(65, 4, 4);
+        final ArrayNode a4 = (ArrayNode) assoc(a3, 0, e4);
+        assertNull(getEntry(dissoc(a4, 0, 1, 1), 0, 1, 1));
+
+        final ArrayNode a5 = (ArrayNode) assoc(a3, 0, e2);
+        assertNull(getEntry(dissoc(a5, 0, 2, 2), 0, 2, 2));
     }
 
     @Test
@@ -331,34 +339,53 @@ public class NodesTest {
     @Test
     void differenceArrayNode() {
         final Entry e1 = new Entry(1, 1, 1);
-        final ArrayNode a = makeArrayNode(e1, 0);
-        assertTrue(difference(0, a, new Entry(2, 2, 2)) == a);
-        assertTrue(difference(0, a, new Entry(1, 1, 2)) == a);
-        assertNull(difference(0, a, e1));
-        assertNull(difference(0, a, new Entry(1, 1, 1)));
-
-        assertNull(difference(
-            0, a, makeArrayNode(new Entry(1, 1, 1), 0)));
-        assertTrue(difference(
-            0, a, makeArrayNode(new Entry(1, 1, 2), 0)) == a);
-
         final Entry e2 = new Entry(2, 2, 2);
+        final ArrayNode a = makeArrayNode2(e1, e2, 0);
+        assertTrue(difference(0, a, new Entry(3, 3, 3)) == a);
+        assertTrue(difference(0, a, new Entry(1, 1, 3)) == a);
+        assertTrue(difference(0, a, e1) == e2);
+        assertTrue(difference(0, a, new Entry(1, 1, 1)) == e2);
+
+        assertNull(difference(0, a,
+            makeArrayNode2(new Entry(1, 1, 1), new Entry(2, 2, 2), 0)));
+        assertTrue(difference(0, a,
+            makeArrayNode2(new Entry(1, 1, 2), new Entry(2, 2, 3), 0)) == a);
+
+        final Entry e3 = new Entry(3, 3, 3);
+        assertTrue(difference(0, assoc(a, 0, e3), a) == e3);
+        final Entry e4 = new Entry(4, 4, 4);
         final ArrayNode d = (ArrayNode) difference(
-            0, assoc(a, 0, e2), a);
+            0, assoc(assoc(a, 0, e3), 0, e4), a);
         assertNull(getEntry(d, 0, 1, 1));
-        assertTrue(getEntry(d, 0, 2, 2) == e2);
+        assertNull(getEntry(d, 0, 2, 2));
+        assertTrue(getEntry(d, 0, 3, 3) == e3);
+        assertTrue(getEntry(d, 0, 4, 4) == e4);
 
         assertTrue(difference(
             0, a, makeCollisionNode(
                 new Entry(1, 2, 2), new Entry(1, 3, 3))) == a);
-        assertNull(difference(
-            0, a, makeCollisionNode(e1, new Entry(1, 2, 2))));
-        assertNull(difference(
+        assertTrue(difference(
+            0, a, makeCollisionNode(e1, new Entry(1, 2, 2))) == e2);
+        assertTrue(difference(
             0, a, makeCollisionNode(
-                new Entry(1, 2, 2), new Entry(1, 1, 1))));
+                new Entry(1, 2, 2), new Entry(1, 1, 1))) == e2);
         assertTrue(difference(
             0, a, makeCollisionNode(
                 new Entry(1, 1, 2), new Entry(1, 2, 2))) == a);
+    }
+
+    @Test
+    void difference_ArrayNode_ArrayNode_singleChild_returnArrayNode() {
+        final Entry e1 = new Entry(1, 1, 1);
+        final Entry e2 = new Entry(2, 2, 2);
+        final Entry e3 = new Entry(33, 3, 3);
+        final ArrayNode a1 = (ArrayNode) assoc(
+            makeArrayNode2(e1, e2, 0), 0, e3);
+        final ArrayNode a2 = makeArrayNode2(e2, new Entry(33, 3, 4), 0);
+        final ArrayNode d = (ArrayNode) difference(0, a1, a2);
+        assertTrue(getEntry(d, 0, 1, 1) == e1);
+        assertNull(getEntry(d, 0, 2, 2));
+        assertTrue(getEntry(d, 0, 33, 3) == e3);
     }
 
     @Test
@@ -426,37 +453,32 @@ public class NodesTest {
     }
 
     @Test
+    void equivDifferentCount() {
+        final Entry e = new Entry(1, 1, 1);
+        final ArrayNode a = makeArrayNode2(e, new Entry(2, 2, 2), 0);
+        assertFalse(equiv(0, a, e));
+    }
+
+    @Test
     void equivEntry() {
         final Entry e = new Entry(1, 1, 1);
         assertTrue(equiv(0, e, new Entry(1, 1, 1)));
         assertFalse(equiv(0, e, new Entry(1, 2, 1)));
         assertFalse(equiv(0, e, new Entry(1, 1, 2)));
         assertFalse(equiv(0, e, new Entry(1, 2, 2)));
-        assertFalse(equiv(0, e, makeCollisionNode(e, new Entry(1, 2, 2))));
-        assertFalse(equiv(0, e, makeArrayNode(new Entry(2, 2, 2), 0)));
-        assertTrue(equiv(0, e, makeArrayNode(e, 0)));
-        assertTrue(equiv(0, e, makeArrayNode(new Entry(1, 1, 1), 0)));
-        assertFalse(equiv(0, e, makeArrayNode(new Entry(1, 1, 2), 0)));
     }
 
     @Test
     void equivArrayNode() {
-        assertTrue(equiv(0, makeArrayNode(new Entry(1, 1, 1), 0),
-            new Entry(1, 1, 1)));
-        assertTrue(equiv(0,
-            makeArrayNode(new Entry(1, 1, 1), 0),
-            makeArrayNode(new Entry(1, 1, 1), 0)));
         assertFalse(equiv(0,
-            makeArrayNode(new Entry(1, 1, 1), 0),
-            makeArrayNode(new Entry(1, 1, 2), 0)));
+            makeArrayNode2(new Entry(1, 1, 1), new Entry(2, 2, 2), 0),
+            makeArrayNode2(new Entry(1, 1, 1), new Entry(2, 2, 3), 0)));
         assertTrue(equiv(0,
-            makeArrayNode(
-                makeCollisionNode(
-                    new Entry(1, 1, 1),
-                    new Entry(1, 2, 2)), 0),
-            makeCollisionNode(
-                new Entry(1, 2, 2),
-                new Entry(1, 1, 1))));
+            makeArrayNode2(new Entry(1, 1, 1), new Entry(2, 2, 2), 0),
+            makeArrayNode2(new Entry(1, 1, 1), new Entry(2, 2, 2), 0)));
+        assertFalse(equiv(0,
+            makeArrayNode2(new Entry(1, 1, 1), new Entry(2, 2, 2), 0),
+            makeCollisionNode(new Entry(1, 1, 1), new Entry(1, 3, 3))));
     }
 
     @Test
@@ -470,5 +492,8 @@ public class NodesTest {
         assertFalse(equiv(0,
             makeCollisionNode(new Entry(1, 1, 1), new Entry(1, 2, 2)),
             makeCollisionNode(new Entry(1, 1, 1), new Entry(1, 3, 3))));
+        assertFalse(equiv(0,
+            makeCollisionNode(new Entry(1, 1, 1), new Entry(1, 2, 2)),
+            makeArrayNode2(new Entry(1, 1, 1), new Entry(33, 3, 3), 0)));
     }
 }

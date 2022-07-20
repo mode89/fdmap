@@ -258,8 +258,9 @@ public class Nodes {
         final Class<?> nodeClass = nodeObj.getClass();
         if (nodeClass == ArrayNode.class) {
             final ArrayNode node = (ArrayNode) nodeObj;
+            final Object[] children = node.children;
             final int childIndex = arrayIndex(shift, keyHash);
-            final Object child = node.children[childIndex];
+            final Object child = children[childIndex];
             if (child == null) {
                 return node;
             } else {
@@ -268,26 +269,40 @@ public class Nodes {
                 if (child == newChild) {
                     return node;
                 } else {
-                    if (newChild == null) {
-                        if (node.childrenCount > 1) {
-                            final Object[] newChildren =
-                                node.children.clone();
-                            newChildren[childIndex] = null;
-                            return new ArrayNode(
-                                newChildren,
-                                node.childrenCount - 1,
-                                node.entryCount - 1);
+                    final int newChildrenCount = (newChild == null)
+                        ? node.childrenCount - 1
+                        : node.childrenCount;
+
+                    if (newChildrenCount == 0) {
+                        throw new UnsupportedOperationException(
+                            "If no children left, that means that before "
+                            + "this call the ArrayNode had only one entry "
+                            + "under it, which isn't allowed to happen.");
+                    } else if (newChildrenCount == 1) {
+                        // If only one child left and it is not an ArrayNode,
+                        // we should return this child, instead.
+                        if (newChild == null) {
+                            for (int i = 0; i < 32; ++ i) {
+                                final Object ch = children[i];
+                                if (ch != null &&
+                                    ch != child &&
+                                    ch.getClass() != ArrayNode.class) {
+                                    return ch;
+                                }
+                            }
                         } else {
-                            return null;
+                            if (newChild.getClass() != ArrayNode.class) {
+                                return newChild;
+                            }
                         }
-                    } else {
-                        final Object[] newChildren = node.children.clone();
-                        newChildren[childIndex] = newChild;
-                        return new ArrayNode(
-                            newChildren,
-                            node.childrenCount,
-                            node.entryCount - 1);
                     }
+
+                    final Object[] newChildren = children.clone();
+                    newChildren[childIndex] = newChild;
+                    return new ArrayNode(
+                        newChildren,
+                        newChildrenCount,
+                        node.entryCount - 1);
                 }
             }
         } else if (nodeClass == Entry.class) {
@@ -348,7 +363,8 @@ public class Nodes {
                     return seq(child, root);
                 }
             }
-            return null;
+            throw new RuntimeException(
+                "ArrayNode is supposed to have at least one child");
         } else if (nodeClass == Entry.class) {
             return new Seq(root, (Entry) nodeObj, 0);
         } else if (nodeClass == CollisionNode.class) {
@@ -406,7 +422,7 @@ public class Nodes {
         if (leftNodeObj == rightNodeObj) {
             return true;
         } else if (leftNodeObj != null && rightNodeObj != null) {
-            if (countEntries(leftNodeObj) !=  countEntries(rightNodeObj)) {
+            if (countEntries(leftNodeObj) != countEntries(rightNodeObj)) {
                 return false;
             } else {
                 final Class<?> leftNodeClass = leftNodeObj.getClass();
@@ -423,32 +439,23 @@ public class Nodes {
                             }
                         }
                         return true;
-                    } else if (rightNodeClass == Entry.class) {
-                        return equiv(shift, rightNodeObj, leftNode);
                     } else if (rightNodeClass == CollisionNode.class) {
-                        return equiv(shift, rightNodeObj, leftNode);
+                        // If an ArrayNode is equial to a CollisionNode,
+                        // that means that the only non-ArrayNode node under
+                        // the ArrayNode is a CollisionNode. Such ArrayNode
+                        // will never be constructed.
+                        return false;
+                    } else if (rightNodeClass == Entry.class) {
+                        throw new UnsupportedOperationException(
+                            "This should never happen, because ArrayNode "
+                            + "is supposed to have at least 2 entries "
+                            + "under it.");
                     } else {
                         throw new UnsupportedOperationException();
                     }
                 } else if (leftNodeClass == Entry.class) {
                     final Entry leftNode = (Entry) leftNodeObj;
-                    if (rightNodeClass == ArrayNode.class) {
-                        final Entry rightEntry = getEntry(
-                            rightNodeObj,
-                            shift,
-                            leftNode.keyHash,
-                            leftNode.key);
-                        if (rightEntry == null) {
-                            return false;
-                        } else if (leftNode == rightEntry
-                                   || Objects.equals(
-                                        leftNode.value,
-                                        rightEntry.value)) {
-                            return true;
-                        } else {
-                            return false;
-                        }
-                    } else if (rightNodeClass == Entry.class) {
+                    if (rightNodeClass == Entry.class) {
                         final Entry rightNode = (Entry) rightNodeObj;
                         if (Objects.equals(leftNode.key, rightNode.key) &&
                             Objects.equals(leftNode.value, rightNode.value)) {
@@ -456,13 +463,18 @@ public class Nodes {
                         } else {
                             return false;
                         }
+                    } else if (rightNodeClass == ArrayNode.class
+                            || rightNodeClass == CollisionNode.class) {
+                        throw new UnsupportedOperationException(
+                            "This should never happen, because "
+                            + "ArrayNode and CollisionNode are supposed "
+                            + "to have at least 2 entries under it.");
                     } else {
                         throw new UnsupportedOperationException();
                     }
                 } else if (leftNodeClass == CollisionNode.class) {
                     final CollisionNode leftNode = (CollisionNode) leftNodeObj;
-                    if (rightNodeClass == ArrayNode.class
-                        || rightNodeClass == CollisionNode.class) {
+                    if (rightNodeClass == CollisionNode.class) {
                         for (Entry leftEntry: leftNode.children) {
                             final Entry rightEntry = getEntry(
                                 rightNodeObj,
@@ -477,6 +489,17 @@ public class Nodes {
                             }
                         }
                         return true;
+                    } else if (rightNodeClass == ArrayNode.class) {
+                        // If an ArrayNode is equial to a CollisionNode,
+                        // that means that the only non-ArrayNode node under
+                        // the ArrayNode is a CollisionNode. Such ArrayNode
+                        // will never be constructed.
+                        return false;
+                    } else if (rightNodeClass == Entry.class) {
+                        throw new UnsupportedOperationException(
+                            "This should never happen, because "
+                            + "CollisionNode is supposed to have at least "
+                            + "2 entries under it.");
                     } else {
                         throw new UnsupportedOperationException();
                     }
@@ -546,6 +569,17 @@ public class Nodes {
                     } else if (returnLeftNode) {
                         return leftNode;
                     } else {
+                        // If only one child left and it is not an ArrayNode,
+                        // we should return this child, instead.
+                        if (childrenCount == 1) {
+                            for (int i = 0; i < 32; ++ i) {
+                                final Object ch = children[i];
+                                if (ch != null &&
+                                    ch.getClass() != ArrayNode.class) {
+                                    return ch;
+                                }
+                            }
+                        }
                         return new ArrayNode(
                             children, childrenCount, entryCount);
                     }
@@ -558,7 +592,10 @@ public class Nodes {
                     Object result = leftNode;
                     for (Entry rightEntry: rightNode.children) {
                         final Entry leftEntry = getEntry(
-                            result, shift, rightEntry.keyHash, rightEntry.key);
+                            result,
+                            shift,
+                            rightEntry.keyHash,
+                            rightEntry.key);
                         if (leftEntry != null
                             && (leftEntry == rightEntry
                                 || Objects.equals(
@@ -571,7 +608,11 @@ public class Nodes {
                                 rightEntry.key);
                         }
                         if (result == null) {
-                            break;
+                            throw new UnsupportedOperationException(
+                                "If the ArrayNode dissoc'ed all entries, "
+                                + "it means that initially it had just "
+                                + "a single Entry/CollisionNode under it, "
+                                + "which shouldn't ever happen.");
                         }
                     }
                     return result;
