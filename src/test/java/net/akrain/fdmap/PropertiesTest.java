@@ -100,6 +100,8 @@ public class PropertiesTest {
                 map.put(key, value);
             } else if (name == "dissoc") {
                 map.remove(key);
+            } else {
+                throw new UnsupportedOperationException();
             }
         }
         return map;
