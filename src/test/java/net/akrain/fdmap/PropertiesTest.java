@@ -290,6 +290,23 @@ public class PropertiesTest {
         }
 
         @Override
+        public boolean equals(Object otherObj) {
+            if (otherObj == null) {
+                return false;
+            } else {
+                final Key other = (Key) otherObj;
+                if (Objects.equals(this.value, other.value)) {
+                    if (this.hash != other.hash) {
+                        throw new RuntimeException();
+                    }
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+
+        @Override
         public String toString() {
             return String.format("Key@{v:'%s',h:%d}", value, hash);
         }
