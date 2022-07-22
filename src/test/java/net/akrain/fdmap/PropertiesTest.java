@@ -254,7 +254,7 @@ public class PropertiesTest {
             .as((vs, hs) -> vs.stream()
                 .map(v -> (Object) new Key(v, Arbitraries.of(hs).sample()))
                 .collect(Collectors.toSet()))
-            .flatMap(keys -> Arbitraries.of(true, false, false, false, false)
+            .flatMap(keys -> Arbitraries.of(false, false, false, false, true)
                 .flatMap(new Function<Boolean,Arbitrary<Set<Object>>>() {
                     @Override
                     public Arbitrary<Set<Object>> apply(Boolean addNull) {
@@ -271,8 +271,8 @@ public class PropertiesTest {
         return Arbitraries.oneOf(
             Arbitraries.just(null),
             Arbitraries.integers(),
-            Arbitraries.strings(),
-            Arbitraries.doubles());
+            Arbitraries.doubles(),
+            Arbitraries.strings());
     }
 
     private static class Key {
