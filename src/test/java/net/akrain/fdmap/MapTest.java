@@ -149,4 +149,42 @@ public class MapTest {
         assertTrue(blank().assoc(1, 2).equiv(blank().assoc(1, 2)));
         assertTrue(blank().assoc(1, 2).equiv(java.util.Map.of(1, 2)));
     }
+
+    @Test
+    void intersectionWrongHasher() {
+        assertThrows(UnsupportedOperationException.class,
+            () -> blank().intersection(blank(x -> (Integer) x)));
+    }
+
+    @Test
+    void intersectionSameAsLeft() {
+        final Map m1 = blank().assoc(1, 1);
+        final Map m2 = m1.assoc(2, 2);
+        assertTrue(m1.intersection(m2) == m1);
+    }
+
+    @Test
+    void intersectionSameAsRight() {
+        final Map m1 = blank().assoc(1, 1);
+        final Map m2 = m1.assoc(2, 2);
+        assertTrue(m2.intersection(m1) == m1);
+    }
+
+    @Test
+    void intersectionEmpty() {
+        final ToIntFunction<Object> hasher = (x) -> (Integer) x;
+        assertTrue(
+            blank(hasher).assoc(1, 1)
+                .intersection(blank(hasher).assoc(2, 2))
+                == blank(hasher));
+    }
+
+    @Test
+    void intsersectionNewMap() {
+        final ToIntFunction<Object> hasher = (x) -> (Integer) x;
+        final Map m0 = blank(hasher).assoc(1, 1);
+        final Map mi = m0.assoc(2, 2).intersection(m0.assoc(3, 3));
+        assertEquals(m0, mi);
+        assertTrue(mi.keyHasher == hasher);
+    }
 }

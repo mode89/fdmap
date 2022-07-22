@@ -120,6 +120,26 @@ public class Map extends APersistentMap {
         }
     }
 
+    public Map intersection(final Map other) {
+        if (this.keyHasher != other.keyHasher) {
+            throw new UnsupportedOperationException(
+                "Can't calculated intersection of maps that were built " +
+                "with different key-hashers");
+        }
+        final Object newRoot = Nodes.intersection(0, this.root, other.root);
+        if (newRoot == this.root) {
+            return this;
+        } else if (newRoot == other.root) {
+            return other;
+        } else {
+            if (newRoot == null) {
+                return blank(keyHasher);
+            } else {
+                return new Map(newRoot, keyHasher);
+            }
+        }
+    }
+
     // Implementation of IPersistentMap
 
     @Override

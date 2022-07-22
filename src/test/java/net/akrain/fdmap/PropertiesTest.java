@@ -77,6 +77,15 @@ public class PropertiesTest {
 
         assertEquals(hmap1.equals(hmap2), fdmap1.equiv(fdmap2));
 
+        assertSimilar(
+            fdmap1.intersection(fdmap2),
+            hashMapIntersection(hmap1, hmap2),
+            keys);
+        assertSimilar(
+            fdmap2.intersection(fdmap1),
+            hashMapIntersection(hmap2, hmap1),
+            keys);
+
         return true;
     }
 
@@ -137,6 +146,22 @@ public class PropertiesTest {
             if (!rightMap.containsKey(key)
                 || !Objects.equals(rightMap.get(key), value)) {
                 result.put(key, value);
+            }
+        }
+        return result;
+    }
+
+    private static HashMap<Object,Object> hashMapIntersection(
+            HashMap<Object,Object> leftMap,
+            HashMap<Object,Object> rightMap) {
+        final HashMap<Object,Object> result = new HashMap<>();
+        for (java.util.Map.Entry leftEntry: leftMap.entrySet()) {
+            final Object key = leftEntry.getKey();
+            final Object leftValue = leftEntry.getValue();
+            final Object rightValue = rightMap.get(key);
+            if (rightMap.containsKey(key)
+                && Objects.equals(leftValue, rightValue)) {
+                result.put(key, leftValue);
             }
         }
         return result;

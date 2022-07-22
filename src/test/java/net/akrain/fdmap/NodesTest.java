@@ -9,6 +9,19 @@ import org.junit.jupiter.api.Test;
 
 public class NodesTest {
 
+    static Object makeNode(Entry... entries) {
+        assertTrue(entries.length > 0);
+        Object node = null;
+        for (Entry entry: entries) {
+            if (node == null) {
+                node = entry;
+            } else {
+                node = assoc(node, 0, entry);
+            }
+        }
+        return node;
+    }
+
     static ArrayNode makeArrayNode2(
             final Entry e1,
             final Entry e2,
@@ -495,5 +508,285 @@ public class NodesTest {
         assertFalse(equiv(0,
             makeCollisionNode(new Entry(1, 1, 1), new Entry(1, 2, 2)),
             makeArrayNode2(new Entry(1, 1, 1), new Entry(33, 3, 3), 0)));
+    }
+
+    @Test
+    void getEntryOrCollisionNode_Entry() {
+        final Entry e = new Entry(1, 1, 1);
+        assertNull(getEntryOrCollisionNode(e, 0, 2));
+        assertTrue(getEntryOrCollisionNode(e, 0, 1) == e);
+    }
+
+    @Test
+    void getEntryOrCollisionNode_CollisionNode() {
+        final CollisionNode c = makeCollisionNode(
+            new Entry(1, 1, 1), new Entry(1, 2, 2));
+        assertNull(getEntryOrCollisionNode(c, 0, 2));
+        assertTrue(getEntryOrCollisionNode(c, 0, 1) == c);
+    }
+
+    @Test
+    void getEntryOrCollisionNode_ArrayNode() {
+        final Entry e1 = new Entry(1, 1, 1);
+        final Entry e2 = new Entry(2, 2, 2);
+        final ArrayNode a = makeArrayNode2(e1, e2, 0);
+        assertTrue(getEntryOrCollisionNode(a, 0, 1) == e1);
+        assertTrue(getEntryOrCollisionNode(a, 0, 2) == e2);
+        assertNull(getEntryOrCollisionNode(a, 0, 3));
+    }
+
+    @Test
+    void intersectionIdentical() {
+        final Entry e = new Entry(1, 1, 1);
+        assertTrue(intersection(0, e, e) == e);
+    }
+
+    @Test
+    void intersectionNull() {
+        final Entry e = new Entry(1, 1, 1);
+        assertNull(intersection(0, null, null));
+        assertNull(intersection(0, e, null));
+        assertNull(intersection(0, null, e));
+    }
+
+    @Test
+    void intersection_Entry_Entry_Equal() {
+        final Entry e = new Entry(1, 1, 1);
+        assertTrue(intersection(0, e, new Entry(1, 1, 1)) == e);
+    }
+
+    @Test
+    void intersection_Entry_Entry_SameKey() {
+        assertNull(intersection(0, new Entry(1, 1, 1), new Entry(1, 1, 2)));
+    }
+
+    @Test
+    void intersection_Entry_Entry_Different() {
+        assertNull(intersection(0, new Entry(1, 1, 1), new Entry(2, 2, 2)));
+    }
+
+    @Test
+    void intersection_Entry_ArrayNode_NotPresent() {
+        assertNull(intersection(0,
+            new Entry(1, 1, 1),
+            makeArrayNode2(new Entry(2, 2, 2), new Entry(3, 3, 3), 0)));
+    }
+
+    @Test
+    void intersection_Entry_ArrayNode_Identical() {
+        final Entry e = new Entry(1, 1, 1);
+        assertTrue(intersection(0,
+            e,
+            makeArrayNode2(e, new Entry(2, 2, 2), 0)) == e);
+    }
+
+    @Test
+    void intersection_Entry_ArrayNode_Equal() {
+        final Entry e = new Entry(1, 1, 1);
+        assertTrue(intersection(0,
+            e,
+            makeArrayNode2(
+                new Entry(1, 1, 1),
+                new Entry(2, 2, 2), 0)) == e);
+    }
+
+    @Test
+    void intersection_Entry_ArrayNode_NotEqual() {
+        assertNull(intersection(0,
+            new Entry(1, 1, 1),
+            makeArrayNode2(
+                new Entry(1, 1, 2),
+                new Entry(2, 2, 2), 0)));
+    }
+
+    @Test
+    void intersection_Entry_CollisionNode() {
+        final Entry e = new Entry(1, 1, 1);
+        assertTrue(intersection(0,
+            e,
+            makeCollisionNode(
+                new Entry(1, 1, 1),
+                new Entry(1, 2, 2))) == e);
+    }
+
+    @Test
+    void intersection_CollisionNode_Entry() {
+        final Entry e = new Entry(1, 1, 1);
+        assertTrue(intersection(0,
+            makeCollisionNode(
+                new Entry(1, 1, 1),
+                new Entry(1, 2, 2)),
+            e) == e);
+    }
+
+    @Test
+    void intersection_CollisionNode_CollisionNode_DifferentHash() {
+        assertNull(intersection(0,
+            makeCollisionNode(new Entry(1, 1, 1), new Entry(1, 2, 2)),
+            makeCollisionNode(new Entry(2, 3, 3), new Entry(2, 4, 4))));
+    }
+
+    @Test
+    void intersection_CollisionNode_CollisionNode_NotIntersect() {
+        assertNull(intersection(0,
+            makeCollisionNode(new Entry(1, 1, 1), new Entry(1, 2, 2)),
+            makeCollisionNode(new Entry(1, 3, 3), new Entry(1, 4, 4))));
+    }
+
+    @Test
+    void intersection_CollisionNode_CollisionNode_OneEntry() {
+        final Entry e = new Entry(1, 1, 1);
+        assertTrue(intersection(0,
+            makeCollisionNode(e, new Entry(1, 2, 2)),
+            makeCollisionNode(e, new Entry(1, 3, 3))) == e);
+    }
+
+    @Test
+    void intersection_CollisionNode_CollisionNode_Equal() {
+        final CollisionNode c = makeCollisionNode(
+            new Entry(1, 1, 1), new Entry(1, 2, 2));
+        assertTrue(intersection(0,
+            c,
+            makeCollisionNode(
+                new Entry(1, 1, 1),
+                new Entry(1, 2, 2))) == c);
+    }
+
+    @Test
+    void intersection_CollisionNode_CollisionNode_NewCollisionNode() {
+        final CollisionNode c0 = makeCollisionNode(
+            new Entry(1, 1, 1), new Entry(1, 2, 2));
+        final CollisionNode ci = (CollisionNode) intersection(0,
+            assoc(c0, 0, new Entry(1, 3, 3)),
+            assoc(c0, 0, new Entry(1, 4, 4)));
+        assertEquals(1, getEntry(ci, 0, 1, 1).value);
+        assertEquals(2, getEntry(ci, 0, 1, 2).value);
+        assertNull(getEntry(ci, 0, 1, 3));
+        assertNull(getEntry(ci, 0, 1, 4));
+    }
+
+    @Test
+    void intersection_CollisionNode_CollisionNode_EntryWithDifferentValue() {
+        final Entry e = new Entry(1, 1, 1);
+        assertTrue(intersection(0,
+            makeCollisionNode(e, new Entry(1, 2, 2)),
+            makeCollisionNode(e, new Entry(1, 2, 3))) == e);
+    }
+
+    @Test
+    void intersection_CollisionNode_CollisionNode_LeftIsBigger() {
+        final CollisionNode r = makeCollisionNode(
+            new Entry(1, 1, 1), new Entry(1, 2, 2));
+        assertTrue(intersection(0, assoc(r, 0, new Entry(1, 3, 3)), r) == r);
+    }
+
+    @Test
+    void intersection_CollisionNode_CollisionNode_SameValues() {
+        assertNull(intersection(0,
+            makeCollisionNode(new Entry(1, 1, 1), new Entry(1, 2, 1)),
+            makeCollisionNode(new Entry(1, 3, 1), new Entry(1, 4, 1))));
+    }
+
+    @Test
+    void intersecton_CollisionNode_ArrayNode() {
+        final Entry e = new Entry(1, 1, 1);
+        assertTrue(intersection(0,
+            makeCollisionNode(e, new Entry(1, 2, 2)),
+            makeArrayNode2(e, new Entry(2, 2, 2), 0)) == e);
+    }
+
+    @Test
+    void intersection_ArrayNode_Entry() {
+        final Entry e = new Entry(1, 1, 1);
+        assertTrue(intersection(0,
+            makeArrayNode2(
+                new Entry(1, 1, 1),
+                new Entry(2, 2, 2), 0),
+            e) == e);
+    }
+
+    @Test
+    void intersection_ArrayNode_CollisionNode() {
+        final Entry e = new Entry(1, 1, 1);
+        assertTrue(intersection(0,
+            makeArrayNode2(
+                e,
+                new Entry(2, 2, 2), 0),
+            makeCollisionNode(
+                new Entry(1, 1, 1),
+                new Entry(1, 2, 2))) == e);
+    }
+
+    @Test
+    void intersection_ArrayNode_ArrayNode_NoIntersection() {
+        assertNull(intersection(0,
+            makeArrayNode2(new Entry(1, 1, 1), new Entry(2, 2, 2), 0),
+            makeArrayNode2(new Entry(3, 3, 3), new Entry(4, 4, 4), 0)));
+    }
+
+    @Test
+    void intersection_ArrayNode_ArrayNode_ReturnLeftNode() {
+        final ArrayNode a = makeArrayNode2(
+            new Entry(1, 1, 1), new Entry(2, 2, 2), 0);
+        assertTrue(intersection(0,
+            a,
+            assoc(a, 0, new Entry(3, 3, 3))) == a);
+    }
+
+    @Test
+    void intersection_ArrayNode_ArrayNode_ReturnEntry() {
+        final Entry e = new Entry(1, 1, 1);
+        assertTrue(intersection(0,
+            makeArrayNode2(e, new Entry(2, 2, 2), 0),
+            makeArrayNode2(e, new Entry(3, 3, 3), 0)) == e);
+    }
+
+    @Test
+    void intersection_ArrayNode_ArrayNode_NewArrayNode() {
+        final ArrayNode a = makeArrayNode2(
+            new Entry(1, 1, 1), new Entry(2, 2, 2), 0);
+        final ArrayNode ai = (ArrayNode) intersection(0,
+            assoc(a, 0, new Entry(3, 3, 3)),
+            assoc(a, 0, new Entry(4, 4, 4)));
+        assertEquals(1, getEntry(a, 0, 1, 1).value);
+        assertEquals(2, getEntry(a, 0, 2, 2).value);
+        assertNull(getEntry(a, 0, 3, 3));
+        assertNull(getEntry(a, 0, 4, 4));
+    }
+
+    @Test
+    void intersection_ArrayNode_ArrayNode_NewArrayNodeWithSingleChild() {
+        final ArrayNode a = makeArrayNode2(
+            new Entry(1, 1, 1), new Entry(33, 3, 3), 0);
+        final ArrayNode ai = (ArrayNode) intersection(0,
+            assoc(a, 0, new Entry(4, 4, 4)),
+            assoc(a, 0, new Entry(5, 5, 5)));
+        assertEquals(1, getEntry(a, 0, 1, 1).value);
+        assertEquals(3, getEntry(a, 0, 33, 3).value);
+        assertNull(getEntry(a, 0, 4, 4));
+        assertNull(getEntry(a, 0, 5, 5));
+    }
+
+    @Test
+    void intersection_ArrayNode_ArrayNode_LeftIsBigger() {
+        final ArrayNode a = makeArrayNode2(
+            new Entry(1, 1, 1), new Entry(2, 2, 2), 0);
+        assertTrue(intersection(0,
+            assoc(a, 0, new Entry(3, 3, 3)),
+            a) == a);
+    }
+
+    @Test
+    void intersection_brokenSample() {
+        final Object n1 = makeNode(
+            new Entry(5, 1, 1),
+            new Entry(320, 2, 2),
+            new Entry(1024, 3, 3));
+        Object n2 = assoc(n1, 0, new Entry(0, null, null));
+        n2 = dissoc(n2, 0, 5, 1);
+        final Object d = intersection(0, n2, n1);
+        assertEquals(2, getEntry(n2, 0, 320, 2).value);
+        assertEquals(3, getEntry(n2, 0, 1024, 3).value);
+        assertEquals(2, countEntries(d));
     }
 }
