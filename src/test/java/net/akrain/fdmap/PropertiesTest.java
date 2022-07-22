@@ -308,7 +308,7 @@ public class PropertiesTest {
 
         @Override
         public String toString() {
-            return String.format("Key@{v:'%s',h:%d}", value, hash);
+            return String.format("Key@{v:%s,h:%d}", value, hash);
         }
     }
 }
