@@ -1,0 +1,35 @@
+plugins {
+    id "java"
+    id "jacoco"
+    id "maven-publish"
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.clojure:clojure:1.11.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+    testImplementation 'net.jqwik:jqwik:1.6.5'
+}
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+compileJava.sourceCompatibility = "11"
+compileJava.targetCompatibility = "11"
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = "net.akrain"
+            artifactId = "fdmap"
+            version = "1.0.0-SNAPSHOT"
+            from components.java
+        }
+    }
+}
