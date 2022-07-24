@@ -3,6 +3,7 @@ package net.akrain.fdmap.kotlin
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.test.assertNull
 
 internal class TrieTest {
 
@@ -93,6 +94,64 @@ internal class TrieTest {
         assertEquals(2, a.entryCount)
         assertEquals(Entry(1, 1, 2), a.children[1])
         assertEquals(Entry(2, 2, 2), a.children[2])
+    }
+
+    @Test
+    fun getEntry_Entry_Same() {
+        assertEquals(Entry(1, 1, 1), getEntry(Entry(1, 1, 1), 0, 1, 1))
+    }
+
+    @Test
+    fun getEntry_Entry_WrongKey() {
+        assertNull(getEntry(Entry(1, 1, 1), 0, 1, 2))
+    }
+
+    @Test
+    fun getEntry_Entry_WrongKeyAndHash() {
+        assertNull(getEntry(Entry(1, 1, 1), 0, 2, 2))
+        assertNull(getEntry(Entry(1, 1, 1), 0, 2, 1))
+    }
+
+    @Test
+    fun getEntry_CollisionNode() {
+        assertEquals(
+            Entry(1, 2, 2),
+            getEntry(
+                makeCollisionNode(Entry(1, 1, 1), Entry(1, 2, 2)),
+                0, 1, 2))
+    }
+
+    @Test
+    fun getEntry_CollisionNode_WrongKeyHash() {
+        assertNull(
+            getEntry(
+                makeCollisionNode(Entry(1, 1, 1), Entry(1, 2, 2)),
+                0, 2, 3))
+    }
+
+    @Test
+    fun getEntry_CollisionNode_WrongKey() {
+        assertNull(
+            getEntry(
+                makeCollisionNode(Entry(1, 1, 1), Entry(1, 2, 2)),
+                0, 1, 3))
+    }
+
+    @Test
+    fun getEntry_ArrayNode() {
+        assertEquals(
+            Entry(2, 2, 2),
+            getEntry(
+                makeArrayNodeOf(Entry(1, 1, 1), Entry(2, 2, 2)),
+                0, 2, 2))
+    }
+
+    @Test
+    fun getEntry_ArrayNode_NotFound() {
+        assertNull(
+            getEntry(
+                makeArrayNodeOf(Entry(1, 1, 1), Entry(2, 2, 2)),
+                0, 3, 3))
     }
 }
 

@@ -97,6 +97,27 @@ private fun assocCollisionNode(
     }
 }
 
+fun getEntry(node: Any, shift: Int, keyHash: Int, key: Any): Entry? {
+    return when (node) {
+        is ArrayNode -> {
+            val childIndex = arrayIndex(shift, keyHash)
+            val child = node.children[childIndex]
+            if (child != null)
+                getEntry(child, shift + 5, keyHash, key)
+            else null
+        }
+        is Entry ->
+            if ((node.keyHash == keyHash) and (node.key == key))
+                node
+            else null
+        is CollisionNode ->
+            if (node.keyHash == keyHash)
+                node.children.firstOrNull { it.key == key }
+            else null
+        else -> throw UnsupportedOperationException()
+    }
+}
+
 internal fun makeArrayNode(node: Any, shift: Int): ArrayNode {
     val children = arrayOfNulls<Any>(32)
     val index = arrayIndex(shift, getKeyHash(node))
