@@ -1,7 +1,8 @@
 plugins {
     id "java"
-    id "jacoco"
     id "maven-publish"
+    id "org.jetbrains.kotlin.jvm" version "1.7.10"
+    id "org.jetbrains.kotlinx.kover" version "0.5.1"
 }
 
 repositories {
@@ -10,18 +11,21 @@ repositories {
 
 dependencies {
     implementation 'org.clojure:clojure:1.11.1'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.7.10'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+    testImplementation 'org.jetbrains.kotlin:kotlin-test'
     testImplementation 'net.jqwik:jqwik:1.6.5'
 }
 
 test {
     useJUnitPlatform()
-    finalizedBy jacocoTestReport
+    finalizedBy koverReport
 }
 
 compileJava.sourceCompatibility = "11"
 compileJava.targetCompatibility = "11"
+compileKotlin.kotlinOptions.jvmTarget = "11"
 
 publishing {
     publications {
