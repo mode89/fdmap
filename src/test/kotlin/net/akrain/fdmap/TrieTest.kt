@@ -153,16 +153,133 @@ internal class TrieTest {
                 makeArrayNodeOf(Entry(1, 1, 1), Entry(2, 2, 2)),
                 0, 3, 3))
     }
+
+    @Test
+    fun dissocEntry_SameKeyAndHash() {
+        assertNull(dissoc(Entry(1, 1, 1), 0, 1, 1))
+    }
+
+    @Test
+    fun dissocEntry_WrongHash() {
+        assertEquals(Entry(1, 1, 1), dissoc(Entry(1, 1, 1), 0, 2, 1))
+    }
+
+    @Test
+    fun dissocCollisionNode_WrongHash() {
+        val c = makeCollisionNode(Entry(1, 1, 1), Entry(1, 2, 2))
+        assertTrue(dissoc(c, 0, 2, 1) == c)
+    }
+
+    @Test
+    fun dissocCollisionNode_WrongKey() {
+        val c = makeCollisionNode(Entry(1, 1, 1), Entry(1, 2, 2))
+        assertTrue(dissoc(c, 0, 1, 3) == c)
+    }
+
+    @Test
+    fun dissocCollisionNode_ReturnEntry() {
+        val c = makeCollisionNode(Entry(1, 1, 1), Entry(1, 2, 2))
+        assertEquals(Entry(1, 1, 1), dissoc(c, 0, 1, 2))
+    }
+
+    @Test
+    fun dissocCollisionNode_NewCollisionNode() {
+        val c = makeCollisionNode(
+            Entry(1, 1, 1),
+            Entry(1, 2, 2),
+            Entry(1, 3, 3))
+        assertEquals(
+            makeCollisionNode(Entry(1, 2, 2), Entry(1, 3, 3)),
+            dissoc(c, 0, 1, 1))
+    }
+
+    @Test
+    fun dissocArrayNode_Unchanged() {
+        val a = makeArrayNodeOf(Entry(1, 1, 1), Entry(2, 2, 2))
+        assertTrue(dissoc(a, 0, 3, 3) == a)
+    }
+
+    @Test
+    fun dissocArrayNode_UnchangedChild() {
+        val a = makeArrayNodeOf(Entry(1, 1, 1), Entry(2, 2, 2))
+        assertTrue(dissoc(a, 0, 33, 3) == a)
+    }
+
+    @Test
+    fun dissocArrayNode_NewArrayNode() {
+        val a = dissoc(
+            makeArrayNodeOf(
+                Entry(1, 1, 1),
+                Entry(2, 2, 2),
+                Entry(3, 3, 3)),
+            0, 2, 2) as ArrayNode
+        assertEquals(2, a.childrenCount)
+        assertEquals(2, a.entryCount)
+        assertEquals(Entry(1, 1, 1), getEntry(a, 0, 1, 1))
+        assertNull(getEntry(a, 0, 2, 2))
+        assertEquals(Entry(3, 3, 3), getEntry(a, 0, 3, 3))
+    }
+
+    @Test
+    fun dissocArrayNode_ReturnLastChild() {
+        val e = Entry(1, 1, 1)
+        val a = makeArrayNodeOf(e, Entry(2, 2, 2))
+        assertTrue(dissoc(a, 0, 2, 2) == e)
+    }
+
+    @Test
+    fun dissocArrayNode_LastChildIsArrayNode() {
+        val a = dissoc(
+            makeArrayNodeOf(
+                Entry(1, 1, 1),
+                Entry(2, 2, 2),
+                Entry(33, 3, 3)),
+            0, 2, 2) as ArrayNode
+        assertEquals(1, a.childrenCount)
+        assertEquals(2, a.entryCount)
+        assertEquals(Entry(1, 1, 1), getEntry(a, 0, 1, 1))
+        assertNull(getEntry(a, 0, 2, 2))
+        assertEquals(Entry(33, 3, 3), getEntry(a, 0, 33, 3))
+    }
+
+    @Test
+    fun dissocArrayNode_NewChildIsArrayNode() {
+        val a = dissoc(
+            makeArrayNodeOf(
+                Entry(1, 1, 1),
+                Entry(33, 2, 2),
+                Entry(65, 3, 3)),
+            0, 33, 2) as ArrayNode
+        assertEquals(1, a.childrenCount)
+        assertEquals(2, a.entryCount)
+        assertEquals(Entry(1, 1, 1), getEntry(a, 0, 1, 1))
+        assertNull(getEntry(a, 0, 33, 2))
+        assertEquals(Entry(65, 3, 3), getEntry(a, 0, 65, 3))
+    }
+
+    @Test
+    fun dissocArrayNode_ReturnNewChild() {
+        val e = Entry(1, 1, 1)
+        val a = makeArrayNodeOf(e, Entry(33, 3, 3))
+        assertTrue(dissoc(a, 0, 33, 3) == e)
+    }
 }
 
-internal fun makeCollisionNode(e1: Entry, e2: Entry): CollisionNode {
-    assertTrue(e1.keyHash == e2.keyHash)
-    assertTrue(e1.key != e2.key)
-    return CollisionNode(arrayListOf(e1, e2), e1.keyHash)
+internal fun makeCollisionNode(vararg entries: Entry): CollisionNode {
+    assertTrue(entries.size > 1)
+    val keyHash = entries[0].keyHash
+    for (e in entries) {
+        assertTrue(e.keyHash == keyHash)
+        assertEquals(1, entries.count { it.key == e.key })
+    }
+    return CollisionNode(entries.toCollection(ArrayList()), keyHash)
 }
 
 internal fun makeArrayNodeOf(vararg entries: Entry): ArrayNode {
-    assertTrue(entries.size >= 2);
+    assertTrue(entries.size > 1);
+    for (e in entries) {
+        assertEquals(1, entries.count { it.key == e.key })
+    }
     return entries.drop(1).fold(
         makeArrayNode(entries[0], 0),
         { result, entry -> assoc(result, 0, entry) as ArrayNode })
