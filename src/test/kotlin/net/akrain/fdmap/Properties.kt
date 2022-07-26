@@ -19,6 +19,21 @@ class Properties {
         assertSimilar(hm, pm, keys)
     }
 
+    @Property(tries = 2000)
+    fun difference(@ForAll("genDifferenceSamples") sample: Tuple) {
+        val keys = sample.items().get(0) as Set<Any?>
+        val buildOps = sample.items().get(1) as List<Tuple>
+        val ops = sample.items().get(2) as List<Tuple>
+
+        val hm1 = applyOps(buildOps, HashMap())
+        val hm2 = applyOps(ops, hm1)
+        val pm1 = applyOps(buildOps, PHashMap.blank())
+        val pm2 = applyOps(ops, pm1)
+
+        assertSimilar(hashMapDifference(hm1, hm2), pm1.difference(pm2), keys)
+        assertSimilar(hashMapDifference(hm2, hm1), pm2.difference(pm1), keys)
+    }
+
     @Provide
     private fun genOpsAndKeys(): Arb<Tuple> {
         return genKeys().flatMap {
@@ -26,6 +41,19 @@ class Properties {
                 knownValues -> genOps(knownKeys, knownValues).flatMap {
                     ops -> Arbs.just(Tuple.of(ops, knownKeys))
                 }
+            }
+        }
+    }
+
+    @Provide
+    private fun genDifferenceSamples(): Arb<Tuple> {
+        return genKeys().flatMap{
+            knownKeys -> genValues().flatMap{
+                knownValues -> combine(
+                    genBuildOps(knownKeys, knownValues),
+                    genOps(knownKeys, knownValues)) {
+                        bOps, ops -> Tuple.of(knownKeys, bOps, ops)
+                    }
             }
         }
     }
@@ -80,6 +108,37 @@ private fun assertSimilar(
         .map{k -> pm.get(k)}
         .all{x -> x == null})
     assertEquals(hm.size, pm.count())
+}
+
+private fun hashMapDifference(
+        lMap: HashMap<Any?,Any?>,
+        rMap: HashMap<Any?,Any?>): HashMap<Any?,Any?> {
+    return lMap.entries.fold(HashMap(),
+        fun(result: HashMap<Any?,Any?>, entry): HashMap<Any?,Any?> {
+            val key = entry.key
+            val lValue = entry.value
+            if (!rMap.containsKey(key) || lValue != rMap.get(key)) {
+                result.put(key, lValue)
+            }
+            return result
+        })
+}
+
+@Provide
+private fun genBuildOps(
+        knownKeys0: Set<Any?>,
+        knownValues: Set<Any?>): Arb<List<Tuple>> {
+
+    // Arbitraries.subsetOf() can't handle nulls
+    val knownKeys = HashSet(knownKeys0)
+    knownKeys.remove(null)
+
+    val value = Arbs.of(knownValues)
+    return knownKeys
+        .anySubset()
+        .map{ keys -> keys
+            .map{ k -> Tuple.of("assoc", k, value.sample()) }
+            .toList() }
 }
 
 @Provide

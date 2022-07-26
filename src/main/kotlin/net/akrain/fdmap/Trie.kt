@@ -216,6 +216,144 @@ private fun dissocCollisionNode(
     }
 }
 
+fun difference(lNode: Any?, rNode: Any?, shift: Int): Any? {
+    return if (lNode === rNode) {
+        null
+    } else if ((lNode != null) and (rNode != null)) {
+        when (lNode) {
+            is ArrayNode -> differenceA(lNode, rNode!!, shift)
+            is Entry -> differenceE(lNode, rNode!!, shift)
+            is CollisionNode -> differenceC(lNode, rNode!!, shift)
+            else -> throw UnsupportedOperationException()
+        }
+    } else {
+        lNode
+    }
+}
+
+private fun differenceA(lNode: ArrayNode, rNode: Any, shift: Int): Any? {
+    return when (rNode) {
+        is ArrayNode -> {
+            val children = arrayOfNulls<Any>(32)
+            var childrenCount = 0
+            var entryCount = 0
+            var returnLeftNode = true
+            for (i in 0..31) {
+                val lChild = lNode.children[i]
+                val rChild = rNode.children[i]
+                val child = difference(lChild, rChild, shift + 5)
+                children[i] = child
+                if (child != null) {
+                    childrenCount ++
+                    entryCount += countEntries(child)
+                }
+                if (child != lChild) {
+                    returnLeftNode = false
+                }
+            }
+
+            if (childrenCount == 0) {
+                null
+            } else if (returnLeftNode) {
+                lNode
+            } else {
+                // If only one child left and it is not an ArrayNode,
+                // we should return this child, instead
+                val lastChild = if (childrenCount == 1) {
+                    children.firstOrNull { it != null && it !is ArrayNode }
+                } else {
+                    null
+                }
+
+                if (lastChild == null) {
+                    ArrayNode(children, childrenCount, entryCount)
+                } else {
+                    lastChild
+                }
+            }
+        }
+        is Entry -> differenceXE(lNode, rNode, shift)
+        is CollisionNode -> {
+            rNode.children.fold(lNode,
+                fun(result: Any, rEntry: Entry): Any {
+                    val lEntry = getEntry(
+                        result, shift, rEntry.keyHash, rEntry.key)
+                    return if (lEntry != null
+                               && (lEntry === rEntry
+                                   || lEntry.value == rEntry.value)) {
+                        dissoc(result, shift, rEntry.keyHash, rEntry.key)
+                    } else {
+                        result
+                    }!!
+                })
+        }
+        else -> throw UnsupportedOperationException()
+    }
+}
+
+private fun differenceE(lEntry: Entry, rNode: Any, shift: Int): Any? {
+    return when (rNode) {
+        is Entry -> {
+            if ((lEntry.key == rNode.key)
+                and (lEntry.value == rNode.value)) {
+                null
+            } else {
+                lEntry
+            }
+        }
+        else -> {
+            val rEntry = getEntry(rNode, shift, lEntry.keyHash, lEntry.key)
+            if (rEntry == null) {
+                lEntry
+            } else if ((lEntry === rEntry)
+                       or (lEntry.value == rEntry.value)) {
+                null
+            } else {
+                lEntry
+            }
+        }
+    }
+}
+
+private fun differenceC(lNode: CollisionNode, rNode: Any, shift: Int): Any? {
+    return when (rNode) {
+        is Entry -> differenceXE(lNode, rNode, shift)
+        else -> {
+            val children = lNode.children.filter(
+                fun(lEntry): Boolean {
+                    val rEntry = getEntry(
+                        rNode, shift, lEntry.keyHash, lEntry.key)
+                    return if (rEntry == null) {
+                        true
+                    } else {
+                        lEntry.value != rEntry.value
+                    }
+                })
+            if (children.size == 0) {
+                null
+            } else if (children.size == 1) {
+                children.get(0)
+            } else if (children.size == lNode.children.size) {
+                lNode
+            } else {
+                CollisionNode(children, lNode.keyHash)
+            }
+        }
+    }
+}
+
+private fun differenceXE(lNode: Any, rEntry: Entry, shift: Int): Any? {
+    val lEntry = getEntry(lNode, shift, rEntry.keyHash, rEntry.key)
+    return if (lEntry == null) {
+        lNode
+    } else if ((lEntry === rEntry)
+               or (lEntry.value == rEntry.value)) {
+        dissoc(lNode, shift, rEntry.keyHash, rEntry.key)
+    } else {
+        lNode
+    }
+}
+
 internal fun makeArrayNode(node: Any, shift: Int): ArrayNode {
     val children = arrayOfNulls<Any>(32)
     val index = arrayIndex(shift, getKeyHash(node))
