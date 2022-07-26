@@ -2,8 +2,8 @@ package net.akrain.fdmap.kotlin
 
 data class Entry(
     val keyHash: Int,
-    val key: Any,
-    val value: Any,
+    val key: Any?,
+    val value: Any?,
 )
 
 data class ArrayNode(
@@ -97,7 +97,7 @@ private fun assocCollisionNode(
     }
 }
 
-fun getEntry(node: Any, shift: Int, keyHash: Int, key: Any): Entry? {
+fun getEntry(node: Any, shift: Int, keyHash: Int, key: Any?): Entry? {
     return when (node) {
         is ArrayNode -> {
             val childIndex = arrayIndex(shift, keyHash)
@@ -118,7 +118,7 @@ fun getEntry(node: Any, shift: Int, keyHash: Int, key: Any): Entry? {
     }
 }
 
-fun dissoc(node: Any, shift: Int, keyHash: Int, key: Any): Any? {
+fun dissoc(node: Any, shift: Int, keyHash: Int, key: Any?): Any? {
     return when (node) {
         is ArrayNode -> dissocArrayNode(node, shift, keyHash, key)
         is Entry -> dissocEntry(node, keyHash, key)
@@ -131,7 +131,7 @@ private fun dissocArrayNode(
         node: ArrayNode,
         shift: Int,
         keyHash: Int,
-        key: Any): Any {
+        key: Any?): Any {
     val childIndex = arrayIndex(shift, keyHash)
     val child = node.children[childIndex]
     return if (child != null) {
@@ -184,7 +184,7 @@ private fun dissocArrayNode(
 private fun dissocEntry(
         node: Entry,
         keyHash: Int,
-        key: Any): Any? {
+        key: Any?): Any? {
     return if ((node.keyHash == keyHash) and (node.key == key)) {
         null
     } else {
@@ -195,7 +195,7 @@ private fun dissocEntry(
 private fun dissocCollisionNode(
         node: CollisionNode,
         keyHash: Int,
-        key: Any): Any {
+        key: Any?): Any {
     return if (node.keyHash != keyHash) {
         node
     } else {
