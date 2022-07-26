@@ -22,7 +22,10 @@ dependencies {
 test {
     useJUnitPlatform()
     finalizedBy koverReport
-    testLogging.showStandardStreams = true
+    testLogging {
+        showStandardStreams = true
+        exceptionFormat = "full"
+    }
 }
 
 compileJava.sourceCompatibility = "11"
