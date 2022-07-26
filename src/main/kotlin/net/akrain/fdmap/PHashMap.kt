@@ -58,6 +58,22 @@ class PHashMap private constructor(
         return if (root != null) countEntries(root) else 0
     }
 
+    fun difference(other: PHashMap): PHashMap {
+        if (this.keyHasher != other.keyHasher) {
+            throw UnsupportedOperationException(
+                "Can't calculated difference of maps that were built " +
+                "with different key-hashers");
+        }
+        val rootDiff = difference(this.root, other.root, 0);
+        return if (rootDiff == null) {
+            blank(keyHasher)
+        } else if (rootDiff === this.root) {
+            this
+        } else {
+            PHashMap(rootDiff, keyHasher)
+        }
+    }
+
     companion object {
         @JvmStatic
         fun blank(): PHashMap {
