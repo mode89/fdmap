@@ -81,7 +81,7 @@ internal class TrieTest {
     @Test
     fun assocArrayNode_SameChild() {
         val a = makeArrayNodeOf(Entry(1, 1, 1), Entry(2, 2, 2))
-        assertTrue(assoc(a, 0, Entry(1, 1, 1)) == a)
+        assertTrue(assoc(a, 0, Entry(1, 1, 1)) === a)
     }
 
     @Test
@@ -162,7 +162,7 @@ internal class TrieTest {
     @Test
     fun dissocEntry_DiffKey() {
         val e = Entry(1, 1, 1)
-        assertTrue(dissoc(e, 0, 1, 2) == e)
+        assertTrue(dissoc(e, 0, 1, 2) === e)
     }
 
     @Test
@@ -173,13 +173,13 @@ internal class TrieTest {
     @Test
     fun dissocCollisionNode_WrongHash() {
         val c = makeCollisionNode(Entry(1, 1, 1), Entry(1, 2, 2))
-        assertTrue(dissoc(c, 0, 2, 1) == c)
+        assertTrue(dissoc(c, 0, 2, 1) === c)
     }
 
     @Test
     fun dissocCollisionNode_WrongKey() {
         val c = makeCollisionNode(Entry(1, 1, 1), Entry(1, 2, 2))
-        assertTrue(dissoc(c, 0, 1, 3) == c)
+        assertTrue(dissoc(c, 0, 1, 3) === c)
     }
 
     @Test
@@ -202,13 +202,13 @@ internal class TrieTest {
     @Test
     fun dissocArrayNode_Unchanged() {
         val a = makeArrayNodeOf(Entry(1, 1, 1), Entry(2, 2, 2))
-        assertTrue(dissoc(a, 0, 3, 3) == a)
+        assertTrue(dissoc(a, 0, 3, 3) === a)
     }
 
     @Test
     fun dissocArrayNode_UnchangedChild() {
         val a = makeArrayNodeOf(Entry(1, 1, 1), Entry(2, 2, 2))
-        assertTrue(dissoc(a, 0, 33, 3) == a)
+        assertTrue(dissoc(a, 0, 33, 3) === a)
     }
 
     @Test
@@ -230,14 +230,14 @@ internal class TrieTest {
     fun dissocArrayNode_ReturnLastChild() {
         val e = Entry(1, 1, 1)
         val a = makeArrayNodeOf(e, Entry(2, 2, 2))
-        assertTrue(dissoc(a, 0, 2, 2) == e)
+        assertTrue(dissoc(a, 0, 2, 2) === e)
     }
 
     @Test
     fun dissocArrayNode_LastChildHasHigherIndex() {
         val e = Entry(1, 1, 1)
         val a = makeArrayNodeOf(e, Entry(0, 0, 0))
-        assertTrue(dissoc(a, 0, 0, 0) == e)
+        assertTrue(dissoc(a, 0, 0, 0) === e)
     }
 
     @Test
@@ -274,7 +274,7 @@ internal class TrieTest {
     fun dissocArrayNode_ReturnNewChild() {
         val e = Entry(1, 1, 1)
         val a = makeArrayNodeOf(e, Entry(33, 3, 3))
-        assertTrue(dissoc(a, 0, 33, 3) == e)
+        assertTrue(dissoc(a, 0, 33, 3) === e)
     }
 
     @Test
@@ -283,7 +283,7 @@ internal class TrieTest {
         assertNull(difference(e, e, 0))
         assertNull(difference(null, null, 0))
         assertNull(difference(null, e, 0))
-        assertTrue(difference(e, null, 0) == e)
+        assertTrue(difference(e, null, 0) === e)
     }
 
     @Test
@@ -295,13 +295,13 @@ internal class TrieTest {
     @Test
     fun difference_Entry_Entry_DiffValues() {
         val e = Entry(1, 1, 1)
-        assertTrue(difference(e, Entry(1, 1, 2), 0) == e)
+        assertTrue(difference(e, Entry(1, 1, 2), 0) === e)
     }
 
     @Test
     fun difference_Entry_Entry_DifferentKey() {
         val e = Entry(1, 1, 1)
-        assertTrue(difference(e, Entry(2, 2, 1), 0) == e)
+        assertTrue(difference(e, Entry(2, 2, 1), 0) === e)
     }
 
     @Test
@@ -310,7 +310,7 @@ internal class TrieTest {
         assertTrue(difference(
             e,
             makeCollisionNode(Entry(1, 2, 2), Entry(1, 3, 3)),
-            0) == e)
+            0) === e)
     }
 
     @Test
@@ -334,7 +334,7 @@ internal class TrieTest {
         assertTrue(difference(
             e,
             makeCollisionNode(Entry(1, 1, 2), Entry(1, 2, 2)),
-            0) == e)
+            0) === e)
     }
 
     @Test
@@ -348,7 +348,7 @@ internal class TrieTest {
     @Test
     fun difference_CollisionNode_Entry_Miss() {
         val c = makeCollisionNode(Entry(1, 1, 1), Entry(1, 2, 2))
-        assertTrue(difference(c, Entry(1, 3, 3), 0) == c)
+        assertTrue(difference(c, Entry(1, 3, 3), 0) === c)
     }
 
     @Test
@@ -356,20 +356,20 @@ internal class TrieTest {
         val e1 = Entry(1, 1, 1)
         val e2 = Entry(1, 2, 2)
         val c = makeCollisionNode(e1, e2)
-        assertTrue(difference(c, e1, 0) == e2)
+        assertTrue(difference(c, e1, 0) === e2)
     }
 
     @Test
     fun difference_CollisionNode_Entry_SameValue() {
         val e = Entry(1, 1, 1)
         val c = makeCollisionNode(e, Entry(1, 2, 2))
-        assertTrue(difference(c, Entry(1, 2, 2), 0) == e)
+        assertTrue(difference(c, Entry(1, 2, 2), 0) === e)
     }
 
     @Test
     fun difference_CollisionNode_Entry_DiffValue() {
         val c = makeCollisionNode(Entry(1, 1, 1), Entry(1, 2, 2))
-        assertTrue(difference(c, Entry(1, 1, 2), 0) == c)
+        assertTrue(difference(c, Entry(1, 1, 2), 0) === c)
     }
 
     @Test
@@ -388,7 +388,7 @@ internal class TrieTest {
             difference(
                 makeCollisionNode(e, Entry(1, 2, 2)),
                 makeCollisionNode(Entry(1, 2, 2), Entry(1, 3, 3)),
-                0) == e)
+                0) === e)
     }
 
     @Test
@@ -398,7 +398,7 @@ internal class TrieTest {
             difference(
                 c,
                 makeCollisionNode(Entry(1, 3, 3), Entry(1, 4, 4)),
-                0) == c)
+                0) === c)
     }
 
     @Test
@@ -441,7 +441,7 @@ internal class TrieTest {
             difference(
                 makeArrayNodeOf(e, Entry(2, 2, 2)),
                 makeCollisionNode(Entry(2, 2, 2), Entry(2, 3, 3)),
-                0) == e)
+                0) === e)
     }
 
     @Test
@@ -452,7 +452,7 @@ internal class TrieTest {
             difference(
                 makeArrayNodeOf(e1, e2),
                 makeCollisionNode(e2, Entry(2, 3, 3)),
-                0) == e1)
+                0) === e1)
     }
 
     @Test
@@ -462,7 +462,7 @@ internal class TrieTest {
             difference(
                 a,
                 makeCollisionNode(Entry(1, 1, 2), Entry(1, 2, 2)),
-                0) == a)
+                0) === a)
     }
 
     @Test
@@ -481,7 +481,7 @@ internal class TrieTest {
             difference(
                 a,
                 makeArrayNodeOf(Entry(3, 3, 3), Entry(4, 4, 4)),
-                0) == a)
+                0) === a)
     }
 
     @Test
@@ -491,7 +491,7 @@ internal class TrieTest {
             difference(
                 makeArrayNodeOf(e, Entry(2, 2, 2)),
                 makeArrayNodeOf(Entry(2, 2, 2), Entry(3, 3, 3)),
-                0) == e)
+                0) === e)
     }
 
     @Test
