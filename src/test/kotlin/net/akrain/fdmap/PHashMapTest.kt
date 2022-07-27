@@ -4,6 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.test.assertNull
+import kotlin.test.assertFailsWith
 
 internal class PHashMapTest {
 
@@ -120,5 +121,48 @@ internal class PHashMapTest {
     @Test
     fun countNonEmpty() {
         assertEquals(1, PHashMap.blank().assoc(5, 42).count())
+    }
+
+    @Test
+    fun intersectWrongHasher() {
+        assertFailsWith(UnsupportedOperationException::class, {
+            PHashMap.blank().intersect(
+                PHashMap.blank{ x -> x as Int })
+            })
+    }
+
+    @Test
+    fun intersectSameAsLeft() {
+        val m1 = PHashMap.blank().assoc(1, 1)
+        val m2 = m1.assoc(2, 2)
+        assertTrue(m1.intersect(m2) === m1)
+    }
+
+    @Test
+    fun intersectSameAsRight() {
+        val m1 = PHashMap.blank().assoc(1, 1)
+        val m2 = m1.assoc(2, 2)
+        assertTrue(m2.intersect(m1) === m1)
+    }
+
+    @Test
+    fun intersectEmpty() {
+        val hasher = fun(x: Any?): Int { return x as Int }
+        assertTrue(
+            PHashMap.blank(hasher).assoc(1, 1)
+                .intersect(PHashMap.blank(hasher).assoc(2, 2))
+                === PHashMap.blank(hasher))
+    }
+
+    @Test
+    fun intersectNewMap() {
+        val hasher = fun(x: Any?): Int { return x as Int }
+        val m0 = PHashMap.blank(hasher).assoc(1, 1)
+        val mi = m0.assoc(2, 2).intersect(m0.assoc(3, 3))
+        assertEquals(1, mi.count())
+        assertEquals(1, mi.get(1))
+        assertNull(mi.get(2))
+        assertNull(mi.get(3))
+        assertTrue(mi.keyHasher === hasher)
     }
 }
