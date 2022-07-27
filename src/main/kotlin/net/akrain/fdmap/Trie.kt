@@ -107,7 +107,7 @@ fun getEntry(node: Any, shift: Int, keyHash: Int, key: Any?): Entry? {
             else null
         }
         is Entry ->
-            if ((node.keyHash == keyHash) and (node.key == key))
+            if (node.keyHash == keyHash && node.key == key)
                 node
             else null
         is CollisionNode ->
@@ -161,7 +161,7 @@ private fun dissocArrayNode(
                         // Should always succeed, because ArrayNode must
                         // have at least two entries under it
                         val lastChild = node.children.first(
-                            { (it != null) and (it != child) })
+                            { it != null && it != child })
                         if (lastChild is ArrayNode) null else lastChild
                     }
                 }
@@ -185,7 +185,7 @@ private fun dissocEntry(
         node: Entry,
         keyHash: Int,
         key: Any?): Any? {
-    return if ((node.keyHash == keyHash) and (node.key == key)) {
+    return if (node.keyHash == keyHash && node.key == key) {
         null
     } else {
         node
@@ -219,11 +219,11 @@ private fun dissocCollisionNode(
 fun difference(lNode: Any?, rNode: Any?, shift: Int): Any? {
     return if (lNode === rNode) {
         null
-    } else if ((lNode != null) and (rNode != null)) {
+    } else if (lNode != null && rNode != null) {
         when (lNode) {
-            is ArrayNode -> differenceA(lNode, rNode!!, shift)
-            is Entry -> differenceE(lNode, rNode!!, shift)
-            is CollisionNode -> differenceC(lNode, rNode!!, shift)
+            is ArrayNode -> differenceA(lNode, rNode, shift)
+            is Entry -> differenceE(lNode, rNode, shift)
+            is CollisionNode -> differenceC(lNode, rNode, shift)
             else -> throw UnsupportedOperationException()
         }
     } else {
@@ -281,10 +281,10 @@ private fun differenceA(lNode: ArrayNode, rNode: Any, shift: Int): Any? {
                     return if (lEntry != null
                                && (lEntry === rEntry
                                    || lEntry.value == rEntry.value)) {
-                        dissoc(result, shift, rEntry.keyHash, rEntry.key)
+                        dissoc(result, shift, rEntry.keyHash, rEntry.key)!!
                     } else {
                         result
-                    }!!
+                    }
                 })
         }
         else -> throw UnsupportedOperationException()
@@ -294,8 +294,7 @@ private fun differenceA(lNode: ArrayNode, rNode: Any, shift: Int): Any? {
 private fun differenceE(lEntry: Entry, rNode: Any, shift: Int): Any? {
     return when (rNode) {
         is Entry -> {
-            if ((lEntry.key == rNode.key)
-                and (lEntry.value == rNode.value)) {
+            if (lEntry.key == rNode.key && lEntry.value == rNode.value) {
                 null
             } else {
                 lEntry
@@ -305,8 +304,7 @@ private fun differenceE(lEntry: Entry, rNode: Any, shift: Int): Any? {
             val rEntry = getEntry(rNode, shift, lEntry.keyHash, lEntry.key)
             if (rEntry == null) {
                 lEntry
-            } else if ((lEntry === rEntry)
-                       or (lEntry.value == rEntry.value)) {
+            } else if (lEntry === rEntry || lEntry.value == rEntry.value) {
                 null
             } else {
                 lEntry
@@ -346,8 +344,7 @@ private fun differenceXE(lNode: Any, rEntry: Entry, shift: Int): Any? {
     val lEntry = getEntry(lNode, shift, rEntry.keyHash, rEntry.key)
     return if (lEntry == null) {
         lNode
-    } else if ((lEntry === rEntry)
-               or (lEntry.value == rEntry.value)) {
+    } else if (lEntry === rEntry || lEntry.value == rEntry.value) {
         dissoc(lNode, shift, rEntry.keyHash, rEntry.key)
     } else {
         lNode

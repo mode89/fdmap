@@ -160,6 +160,12 @@ internal class TrieTest {
     }
 
     @Test
+    fun dissocEntry_DiffKey() {
+        val e = Entry(1, 1, 1)
+        assertTrue(dissoc(e, 0, 1, 2) == e)
+    }
+
+    @Test
     fun dissocEntry_WrongHash() {
         assertEquals(Entry(1, 1, 1), dissoc(Entry(1, 1, 1), 0, 2, 1))
     }
@@ -228,6 +234,13 @@ internal class TrieTest {
     }
 
     @Test
+    fun dissocArrayNode_LastChildHasHigherIndex() {
+        val e = Entry(1, 1, 1)
+        val a = makeArrayNodeOf(e, Entry(0, 0, 0))
+        assertTrue(dissoc(a, 0, 0, 0) == e)
+    }
+
+    @Test
     fun dissocArrayNode_LastChildIsArrayNode() {
         val a = dissoc(
             makeArrayNodeOf(
@@ -277,6 +290,12 @@ internal class TrieTest {
     fun difference_Entry_Entry_Equal() {
         val e = Entry(1, 1, 1)
         assertNull(difference(e, Entry(1, 1, 1), 0))
+    }
+
+    @Test
+    fun difference_Entry_Entry_DiffValues() {
+        val e = Entry(1, 1, 1)
+        assertTrue(difference(e, Entry(1, 1, 2), 0) == e)
     }
 
     @Test
