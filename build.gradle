@@ -3,10 +3,17 @@ plugins {
     id "maven-publish"
     id "org.jetbrains.kotlin.jvm" version "1.7.10"
     id "org.jetbrains.kotlinx.kover" version "0.5.1"
+    id "org.jetbrains.kotlinx.benchmark" version "0.4.4"
 }
 
 repositories {
     mavenCentral()
+}
+
+sourceSets {
+    benchmarks {
+        kotlin.srcDirs = ["benchmarks"]
+    }
 }
 
 dependencies {
@@ -17,6 +24,11 @@ dependencies {
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
     testImplementation 'net.jqwik:jqwik:1.6.5'
     testImplementation 'net.jqwik:jqwik-kotlin:1.6.5'
+    benchmarksImplementation \
+        sourceSets.main.output + sourceSets.main.runtimeClasspath
+    benchmarksImplementation \
+        'org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.4'
+    benchmarksImplementation "io.vavr:vavr:0.10.4"
 }
 
 test {
@@ -40,5 +52,23 @@ publishing {
             version = "1.0.0-SNAPSHOT"
             from components.java
         }
+    }
+}
+
+benchmark {
+    configurations {
+        main {
+            mode = "avgt"
+            advanced("jvmForks", 5)
+        }
+        fast {
+            mode = "avgt"
+            iterationTime = 1000
+            iterationTimeUnit = "ms"
+        }
+    }
+
+    targets {
+        register("benchmarks")
     }
 }
