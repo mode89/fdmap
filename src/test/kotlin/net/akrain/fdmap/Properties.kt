@@ -7,6 +7,7 @@ import net.jqwik.kotlin.api.*
 
 typealias Arb<T> = Arbitrary<T>
 typealias Arbs = Arbitraries
+typealias JHashMap = HashMap<Any?,Any?>
 
 class Properties {
 
@@ -59,9 +60,7 @@ class Properties {
     }
 }
 
-private fun applyOps(
-        ops: List<Tuple>,
-        map: HashMap<Any?,Any?>): HashMap<Any?,Any?> {
+private fun applyOps(ops: List<Tuple>, map: JHashMap): JHashMap {
     val map = HashMap(map)
     for (op in ops) {
         val name = op.items().get(0)
@@ -94,10 +93,7 @@ private fun applyOps(ops: List<Tuple>, map: PHashMap): PHashMap {
         })
 }
 
-private fun assertSimilar(
-        hm: HashMap<Any?,Any?>,
-        pm: PHashMap,
-        knownKeys: Set<Any?>) {
+private fun assertSimilar(hm: JHashMap, pm: PHashMap, knownKeys: Set<Any?>) {
     val usedKeys = hm.keys
     val unusedKeys = HashSet(knownKeys)
     unusedKeys.removeAll(usedKeys)
@@ -110,11 +106,9 @@ private fun assertSimilar(
     assertEquals(hm.size, pm.count())
 }
 
-private fun hashMapDifference(
-        lMap: HashMap<Any?,Any?>,
-        rMap: HashMap<Any?,Any?>): HashMap<Any?,Any?> {
+private fun hashMapDifference(lMap: JHashMap, rMap: JHashMap): JHashMap {
     return lMap.entries.fold(HashMap(),
-        fun(result: HashMap<Any?,Any?>, entry): HashMap<Any?,Any?> {
+        fun(result: JHashMap, entry): JHashMap {
             val key = entry.key
             val lValue = entry.value
             if (!rMap.containsKey(key) || lValue != rMap.get(key)) {
