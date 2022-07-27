@@ -52,7 +52,7 @@ internal class TrieTest {
 
     @Test
     fun assocCollisionNode_SameEntry() {
-        val c = makeCollisionNode(Entry(1, 1, 1), Entry(1, 2, 2));
+        val c = makeCollisionNode(Entry(1, 1, 1), Entry(1, 2, 2))
         assertTrue(assoc(c, 0, Entry(1, 1, 1)) === c)
     }
 
@@ -532,7 +532,7 @@ internal fun makeCollisionNode(vararg entries: Entry): CollisionNode {
 }
 
 internal fun makeArrayNodeOf(vararg entries: Entry): ArrayNode {
-    assertTrue(entries.size > 1);
+    assertTrue(entries.size > 1)
     for (e in entries) {
         assertEquals(1, entries.count { it.key == e.key })
     }
