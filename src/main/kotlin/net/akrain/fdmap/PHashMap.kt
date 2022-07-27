@@ -14,7 +14,7 @@ class PHashMap private constructor(
         val entry = Entry(keyHasher(key), key, value)
         return if (root != null) {
             val newRoot = assoc(root, 0, entry)
-            if (newRoot != root) PHashMap(newRoot, keyHasher) else this
+            if (newRoot === root) this else PHashMap(newRoot, keyHasher)
         } else {
             PHashMap(entry, keyHasher)
         }
@@ -23,14 +23,14 @@ class PHashMap private constructor(
     fun dissoc(key: Any?): PHashMap {
         return if (root != null) {
             val newRoot = dissoc(root, 0, keyHasher(key), key)
-            if (newRoot != root) {
+            if (newRoot === root) {
+                this
+            } else {
                 if (newRoot != null) {
                     PHashMap(newRoot, keyHasher)
                 } else {
                     blank(keyHasher)
                 }
-            } else {
-                this
             }
         } else {
             this
