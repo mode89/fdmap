@@ -152,9 +152,7 @@ private fun dissocArrayNode(
             } else {
                 // If only one child left and it isn't an ArrayNode,
                 // we should return this child, instead
-                val returnChild = if (newChildrenCount != 1) {
-                    null
-                } else {
+                val returnChild = if (newChildrenCount == 1) {
                     if (newChild != null) {
                         if (newChild is ArrayNode) null else newChild
                     } else {
@@ -164,6 +162,8 @@ private fun dissocArrayNode(
                             { it != null && it != child })
                         if (lastChild is ArrayNode) null else lastChild
                     }
+                } else {
+                    null
                 }
 
                 if (returnChild == null) {
