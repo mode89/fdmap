@@ -183,10 +183,9 @@ internal class PHashMapTest {
     @Test
     fun intersectEmpty() {
         val hasher = fun(x: Any?): Int { return x as Int }
-        assertTrue(
-            PHashMap.blank(hasher).assoc(1, 1)
-                .intersect(PHashMap.blank(hasher).assoc(2, 2))
-                === PHashMap.blank(hasher))
+        val m1 = PHashMap.blank(hasher).assoc(1, 1)
+        val m2 = PHashMap.blank(hasher).assoc(2, 2)
+        assertTrue(m1.intersect(m2) === PHashMap.blank(hasher))
     }
 
     @Test
