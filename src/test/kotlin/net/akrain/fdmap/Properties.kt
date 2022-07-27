@@ -35,6 +35,21 @@ class Properties {
         assertSimilar(hashMapDifference(hm2, hm1), pm2.difference(pm1), keys)
     }
 
+    @Property(tries = 10000)
+    fun intersect(@ForAll("genDifferenceSamples") sample: Tuple) {
+        val keys = sample.items().get(0) as Set<Any?>
+        val buildOps = sample.items().get(1) as List<Tuple>
+        val ops = sample.items().get(2) as List<Tuple>
+
+        val hm1 = applyOps(buildOps, HashMap())
+        val hm2 = applyOps(ops, hm1)
+        val pm1 = applyOps(buildOps, PHashMap.blank())
+        val pm2 = applyOps(ops, pm1)
+
+        assertSimilar(hashMapIntersect(hm1, hm2), pm1.intersect(pm2), keys)
+        assertSimilar(hashMapIntersect(hm2, hm1), pm2.intersect(pm1), keys)
+    }
+
     @Provide
     private fun genOpsAndKeys(): Arb<Tuple> {
         return genKeys().flatMap {
@@ -112,6 +127,18 @@ private fun hashMapDifference(lMap: JHashMap, rMap: JHashMap): JHashMap {
             val key = entry.key
             val lValue = entry.value
             if (!rMap.containsKey(key) || lValue != rMap.get(key)) {
+                result.put(key, lValue)
+            }
+            return result
+        })
+}
+
+private fun hashMapIntersect(lMap: JHashMap, rMap: JHashMap): JHashMap {
+    return lMap.entries.fold(HashMap(),
+        fun(result: JHashMap, entry): JHashMap {
+            val key = entry.key
+            val lValue = entry.value
+            if (rMap.containsKey(key) && lValue == rMap.get(key)) {
                 result.put(key, lValue)
             }
             return result

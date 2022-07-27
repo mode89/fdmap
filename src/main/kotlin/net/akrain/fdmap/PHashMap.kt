@@ -74,6 +74,24 @@ class PHashMap private constructor(
         }
     }
 
+    fun intersect(other: PHashMap): PHashMap {
+        if (this.keyHasher != other.keyHasher) {
+            throw UnsupportedOperationException(
+                "Can't calculated intersection of maps that were built " +
+                "with different key-hashers")
+        }
+        val rootInter = intersect(this.root, other.root, 0)
+        return if (rootInter == null) {
+            blank(keyHasher)
+        } else if (rootInter === this.root) {
+            this
+        } else if (rootInter === other.root) {
+            other
+        } else {
+            PHashMap(rootInter, keyHasher)
+        }
+    }
+
     companion object {
         @JvmStatic
         fun blank(): PHashMap {

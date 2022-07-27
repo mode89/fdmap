@@ -351,6 +351,139 @@ private fun differenceXE(lNode: Any, rEntry: Entry, shift: Int): Any? {
     }
 }
 
+fun intersect(lNode: Any?, rNode: Any?, shift: Int): Any? {
+    return if (lNode === rNode) {
+        lNode
+    } else if (lNode != null && rNode != null) {
+        when (lNode) {
+            is ArrayNode -> intersectA(lNode, rNode, shift)
+            is Entry -> intersectE(lNode, rNode, shift)
+            is CollisionNode -> intersectC(lNode, rNode, shift)
+            else -> throw UnsupportedOperationException()
+        }
+    } else {
+        null
+    }
+}
+
+private fun intersectA(lNode: ArrayNode, rNode: Any, shift: Int): Any? {
+    return when (rNode) {
+        is ArrayNode -> {
+            if (lNode.entryCount > rNode.entryCount) {
+                intersect(rNode, lNode, shift)
+            } else {
+                val lChildren = lNode.children
+                val rChildren = rNode.children
+                val children = arrayOfNulls<Any>(32)
+                var childrenCount = 0
+                var entryCount = 0
+                var returnLeftNode = true
+                for (i in 0..31) {
+                    val lChild = lChildren[i]
+                    val rChild = rChildren[i]
+                    val child = intersect(lChild, rChild, shift + 5)
+                    children[i] = child
+                    if (child != null) {
+                        childrenCount += 1
+                        entryCount += countEntries(child)
+                    }
+                    if (child != lChild) {
+                        returnLeftNode = false
+                    }
+                }
+                if (childrenCount == 0) {
+                    null
+                } else if (returnLeftNode) {
+                    lNode
+                } else {
+                    val lastChild = if (childrenCount == 1) {
+                        children.firstOrNull(
+                            { it != null && it !is ArrayNode })
+                    } else {
+                        null
+                    }
+
+                    if (lastChild == null) {
+                        ArrayNode(children, childrenCount, entryCount)
+                    } else {
+                        lastChild
+                    }
+                }
+            }
+        }
+        is Entry, is CollisionNode -> intersect(rNode, lNode, shift)
+        else -> throw UnsupportedOperationException()
+    }
+}
+
+private fun intersectE(lNode: Entry, rNode: Any, shift: Int): Any? {
+    return when (rNode) {
+        is ArrayNode, is CollisionNode -> {
+            val rEntry = getEntry(rNode, shift, lNode.keyHash, lNode.key)
+            if (rEntry == null) {
+                null
+            } else if (lNode === rEntry || lNode.value == rEntry.value) {
+                lNode
+            } else {
+                null
+            }
+        }
+        is Entry -> {
+            if (lNode.key == rNode.key && lNode.value == rNode.value) {
+                lNode
+            } else {
+                null
+            }
+        }
+        else -> throw UnsupportedOperationException()
+    }
+}
+
+private fun intersectC(lNode: CollisionNode, rNode: Any, shift: Int): Any? {
+    return when (rNode) {
+        is ArrayNode -> intersect(
+            lNode, getNodeByKeyHash(rNode, shift, lNode.keyHash), shift)
+        is Entry -> intersectE(rNode, lNode, shift)
+        is CollisionNode -> {
+            if (lNode.keyHash != rNode.keyHash) {
+                null
+            } else if (lNode.children.size > rNode.children.size) {
+                intersect(rNode, lNode, shift)
+            } else {
+                val children = lNode.children.filter(
+                    { rNode.children.contains(it) })
+                if (children.size == 0) {
+                    null
+                } else if (children.size == 1) {
+                    children.get(0)
+                } else if (children.size == lNode.children.size) {
+                    lNode
+                } else {
+                    CollisionNode(children, lNode.keyHash)
+                }
+            }
+        }
+        else -> throw UnsupportedOperationException()
+    }
+}
+
+internal fun getNodeByKeyHash(node: Any, shift: Int, keyHash: Int): Any? {
+    return when (node) {
+        is ArrayNode -> {
+            val childIndex = arrayIndex(shift, keyHash)
+            val child = node.children[childIndex]
+            if (child == null) {
+                null
+            } else {
+                getNodeByKeyHash(child, shift + 5, keyHash)
+            }
+        }
+        is Entry, is CollisionNode ->
+            if (getKeyHash(node) == keyHash) node else null
+        else -> throw UnsupportedOperationException()
+    }
+}
+
 internal fun makeArrayNode(node: Any, shift: Int): ArrayNode {
     val children = arrayOfNulls<Any>(32)
     val index = arrayIndex(shift, getKeyHash(node))
