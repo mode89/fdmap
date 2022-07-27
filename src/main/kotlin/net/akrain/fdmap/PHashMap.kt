@@ -62,9 +62,9 @@ class PHashMap private constructor(
         if (this.keyHasher != other.keyHasher) {
             throw UnsupportedOperationException(
                 "Can't calculated difference of maps that were built " +
-                "with different key-hashers");
+                "with different key-hashers")
         }
-        val rootDiff = difference(this.root, other.root, 0);
+        val rootDiff = difference(this.root, other.root, 0)
         return if (rootDiff == null) {
             blank(keyHasher)
         } else if (rootDiff === this.root) {
