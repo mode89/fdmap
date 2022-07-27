@@ -124,6 +124,41 @@ internal class PHashMapTest {
     }
 
     @Test
+    fun differenceWrongHasher() {
+        assertFailsWith(UnsupportedOperationException::class, {
+            PHashMap.blank().difference(
+                PHashMap.blank{ x -> x as Int })
+            })
+    }
+
+    @Test
+    fun differenceSameAsLeft() {
+        val m1 = PHashMap.blank().assoc(1, 1)
+        val m2 = m1.assoc(1, 2)
+        assertTrue(m1.difference(m2) === m1)
+    }
+
+    @Test
+    fun differenceEmpty() {
+        val hasher = fun(x: Any?): Int { return x as Int }
+        val m1 = PHashMap.blank(hasher).assoc(1, 1)
+        val m2 = PHashMap.blank(hasher).assoc(1, 1)
+        assertTrue(m1.difference(m2) === PHashMap.blank(hasher))
+    }
+
+    @Test
+    fun differenceNewMap() {
+        val hasher = fun(x: Any?): Int { return x as Int }
+        val m0 = PHashMap.blank(hasher).assoc(1, 1)
+        val md = m0.assoc(2, 2).difference(m0.assoc(3, 3))
+        assertEquals(1, md.count())
+        assertNull(md.get(1))
+        assertEquals(2, md.get(2))
+        assertNull(md.get(3))
+        assertTrue(md.keyHasher === hasher)
+    }
+
+    @Test
     fun intersectWrongHasher() {
         assertFailsWith(UnsupportedOperationException::class, {
             PHashMap.blank().intersect(
