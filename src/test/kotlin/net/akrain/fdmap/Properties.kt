@@ -50,6 +50,21 @@ class Properties {
         assertSimilar(hashMapIntersect(hm2, hm1), pm2.intersect(pm1), keys)
     }
 
+    @Property(tries = 5000)
+    fun equiv(@ForAll("genDifferenceSamples") sample: Tuple) {
+        val keys = sample.items().get(0) as Set<Any?>
+        val buildOps = sample.items().get(1) as List<Tuple>
+        val ops = sample.items().get(2) as List<Tuple>
+
+        val hm1 = applyOps(buildOps, HashMap())
+        val hm2 = applyOps(ops, hm1)
+        val pm1 = applyOps(buildOps, PHashMap.blank())
+        val pm2 = applyOps(ops, pm1)
+
+        assertEquals(hm1.equals(hm2), pm1.equiv(pm2))
+        assertEquals(hm2.equals(hm1), pm2.equiv(pm1))
+    }
+
     @Provide
     private fun genOpsAndKeys(): Arb<Tuple> {
         return genKeys().flatMap {

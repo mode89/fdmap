@@ -2,6 +2,7 @@ package net.akrain.fdmap.kotlin
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlin.test.assertNull
 
@@ -782,6 +783,139 @@ internal class TrieTest {
             assoc(a, 0, Entry(3, 3, 3)),
             a,
             0) === a)
+    }
+
+    @Test
+    fun equiv_Identical() {
+        val e = Entry(1, 1, 1)
+        assertTrue(equiv(e, e, 0))
+    }
+
+    @Test
+    fun equiv_Null() {
+        val e = Entry(1, 1, 1)
+        assertTrue(equiv(null, null, 0))
+        assertFalse(equiv(e, null, 0))
+        assertFalse(equiv(null, e, 0))
+    }
+
+    @Test
+    fun equiv_Entry_Entry_Equal() {
+        assertTrue(equiv(Entry(1, 1, 1), Entry(1, 1, 1), 0))
+    }
+
+    @Test
+    fun equiv_Entry_Entry_DiffKey() {
+        assertFalse(equiv(Entry(1, 2, 2), Entry(1, 3, 3), 0))
+    }
+
+    @Test
+    fun equiv_Entry_Entry_DiffValue() {
+        assertFalse(equiv(Entry(1, 1, 2), Entry(1, 1, 3), 0))
+    }
+
+    @Test
+    fun equiv_Entry_CollisionNode() {
+        assertFalse(equiv(
+            Entry(1, 1, 1),
+            makeCollisionNode(Entry(1, 1, 1), Entry(1, 2, 2)),
+            0))
+    }
+
+    @Test
+    fun equiv_Entry_ArrayNode() {
+        assertFalse(equiv(
+            Entry(1, 1, 1),
+            makeArrayNodeOf(Entry(1, 1, 1), Entry(2, 2, 2)),
+            0))
+    }
+
+    @Test
+    fun equiv_CollisionNode_Entry() {
+        assertFalse(equiv(
+            makeCollisionNode(Entry(1, 1, 1), Entry(1, 2, 2)),
+            Entry(1, 1, 1),
+            0))
+    }
+
+    @Test
+    fun equiv_CollisionNode_ArrayNode() {
+        assertFalse(equiv(
+            makeCollisionNode(Entry(1, 1, 1), Entry(1, 2, 2)),
+            makeArrayNodeOf(Entry(1, 1, 1), Entry(2, 2, 2)),
+            0))
+    }
+
+    @Test
+    fun equiv_CollisionNode_CollisionNode_Equal() {
+        assertTrue(equiv(
+            makeCollisionNode(Entry(1, 1, 1), Entry(1, 2, 2)),
+            makeCollisionNode(Entry(1, 1, 1), Entry(1, 2, 2)),
+            0))
+    }
+
+    @Test
+    fun equiv_CollisionNode_CollisionNode_DiffHash() {
+        assertFalse(equiv(
+            makeCollisionNode(Entry(1, 1, 1), Entry(1, 2, 2)),
+            makeCollisionNode(Entry(2, 3, 3), Entry(2, 4, 4)),
+            0))
+    }
+
+    @Test
+    fun equiv_CollisionNode_CollisionNode_DiffSize() {
+        assertFalse(equiv(
+            makeCollisionNode(Entry(1, 1, 1), Entry(1, 2, 2)),
+            makeCollisionNode(Entry(1, 1, 1), Entry(1, 2, 2), Entry(1, 3, 3)),
+            0))
+    }
+
+    @Test
+    fun equiv_CollisionNode_CollisionNode_DiffContent() {
+        assertFalse(equiv(
+            makeCollisionNode(Entry(1, 1, 1), Entry(1, 2, 2)),
+            makeCollisionNode(Entry(1, 1, 1), Entry(1, 2, 3)),
+            0))
+    }
+
+    @Test
+    fun equiv_ArrayNode_Entry() {
+        assertFalse(equiv(
+            makeArrayNodeOf(Entry(1, 1, 1), Entry(2, 2, 2)),
+            Entry(1, 1, 1),
+            0))
+    }
+
+    @Test
+    fun equiv_ArrayNode_CollisionNode() {
+        assertFalse(equiv(
+            makeArrayNodeOf(Entry(1, 1, 1), Entry(2, 2, 2)),
+            makeCollisionNode(Entry(1, 1, 1), Entry(1, 2, 2)),
+            0))
+    }
+
+    @Test
+    fun equiv_ArrayNode_ArrayNode_Equal() {
+        assertTrue(equiv(
+            makeArrayNodeOf(Entry(1, 1, 1), Entry(2, 2, 2)),
+            makeArrayNodeOf(Entry(1, 1, 1), Entry(2, 2, 2)),
+            0))
+    }
+
+    @Test
+    fun equiv_ArrayNode_ArrayNode_DiffSize() {
+        assertFalse(equiv(
+            makeArrayNodeOf(Entry(1, 1, 1), Entry(2, 2, 2)),
+            makeArrayNodeOf(Entry(1, 1, 1), Entry(2, 2, 2), Entry(3, 3, 3)),
+            0))
+    }
+
+    @Test
+    fun equiv_ArrayNode_ArrayNode_DiffEntry() {
+        assertFalse(equiv(
+            makeArrayNodeOf(Entry(1, 1, 1), Entry(2, 2, 2)),
+            makeArrayNodeOf(Entry(1, 1, 1), Entry(2, 2, 3)),
+            0))
     }
 }
 

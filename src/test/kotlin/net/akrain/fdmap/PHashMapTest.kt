@@ -199,4 +199,19 @@ internal class PHashMapTest {
         assertNull(mi.get(3))
         assertTrue(mi.keyHasher === hasher)
     }
+
+    @Test
+    fun equivWrongHasher() {
+        assertFailsWith(UnsupportedOperationException::class, {
+            PHashMap.blank().assoc(1, 1).equiv(
+                PHashMap.blank{ x -> x as Int }.assoc(1, 1))
+        })
+    }
+
+    @Test
+    fun equivEqual() {
+        assertTrue(
+            PHashMap.blank().assoc(1, 1)
+                .equiv(PHashMap.blank().assoc(1, 1)))
+    }
 }
