@@ -58,6 +58,15 @@ class PHashMap private constructor(
         return if (root != null) countEntries(root) else 0
     }
 
+    fun equiv(other: PHashMap): Boolean {
+        if (this.keyHasher != other.keyHasher) {
+            throw UnsupportedOperationException(
+                "Can't compare maps that were built with different " +
+                "key-hashers")
+        }
+        return equiv(this.root, other.root, 0)
+    }
+
     fun difference(other: PHashMap): PHashMap {
         if (this.keyHasher != other.keyHasher) {
             throw UnsupportedOperationException(

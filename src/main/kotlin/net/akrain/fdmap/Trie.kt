@@ -467,6 +467,48 @@ private fun intersectC(lNode: CollisionNode, rNode: Any, shift: Int): Any? {
     }
 }
 
+fun equiv(lNode: Any?, rNode: Any?, shift: Int): Boolean {
+    return if (lNode === rNode) {
+        true
+    } else if (lNode == null || rNode == null) {
+        false
+    } else {
+        when (lNode) {
+            is ArrayNode ->
+                if (rNode is ArrayNode
+                    && lNode.entryCount == rNode.entryCount) {
+                    val lChildren = lNode.children
+                    val rChildren = rNode.children
+                    var result = true
+                    for (i in 0..31) {
+                        val lChild = lChildren[i]
+                        val rChild = rChildren[i]
+                        if (!equiv(lChild, rChild, shift + 5)) {
+                            result = false
+                            break
+                        }
+                    }
+                    result
+                } else {
+                    false
+                }
+            is Entry ->
+                rNode is Entry
+                && lNode.key == rNode.key
+                && lNode.value == rNode.value
+            is CollisionNode ->
+                if (rNode is CollisionNode
+                    && lNode.keyHash == rNode.keyHash
+                    && lNode.children.size == rNode.children.size) {
+                    lNode.children.containsAll(rNode.children)
+                } else {
+                    false
+                }
+            else -> throw UnsupportedOperationException()
+        }
+    }
+}
+
 internal fun getNodeByKeyHash(node: Any, shift: Int, keyHash: Int): Any? {
     return when (node) {
         is ArrayNode -> {
