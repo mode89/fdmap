@@ -59,12 +59,14 @@ benchmark {
     configurations {
         main {
             mode = "avgt"
-            advanced("jvmForks", 5)
+            advanced("jvmForks", 3)
+            include("Random")
         }
         fast {
             mode = "avgt"
             iterationTime = 1000
             iterationTimeUnit = "ms"
+            include("Random")
         }
     }
 
