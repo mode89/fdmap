@@ -1,9 +1,10 @@
-package net.akrain.fdmap.kotlin
+package net.akrain.fdmap.benchmarks
 
 import clojure.lang.IPersistentMap
 import clojure.lang.PersistentHashMap
 import io.vavr.collection.HashMap
 import java.util.concurrent.TimeUnit
+import net.akrain.fdmap.kotlin.PHashMap
 import org.openjdk.jmh.annotations.Benchmark
 import org.openjdk.jmh.annotations.OutputTimeUnit
 import org.openjdk.jmh.annotations.Scope
